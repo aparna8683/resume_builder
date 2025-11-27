@@ -9,12 +9,10 @@ const ProfessionalSummary = ({ data, onChange, setResumeData }) => {
           <h3 className=" flex items-center gap-3 text-lg font-semibold text-gray-900">
             Professional Summary
           </h3>
-          <p className=" text-gray-700">
-            Add Summary for your Resume here
-          </p>
+          <p className=" text-gray-700">Add Summary for your Resume here</p>
         </div>
         <button className="flex items-center gap-1 rounded bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors disabled:opacity-50 text-sm">
-          <Sparkles className="size-5" />
+          <Sparkles className="size-4" />
           AI Enhance
         </button>
       </div>
