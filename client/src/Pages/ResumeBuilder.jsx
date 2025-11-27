@@ -17,6 +17,8 @@ import {
 import PersonalIInfoForm from "../Components/PersonalIInfoForm";
 import ResumePreview from "../Components/ResumePreview";
 import TemplateSelector from "../Components/TemplateSelector";
+import ColorPicker from "../Components/ColorPicker";
+import ProfessionalSummary from "../Components/Home/ProfessionalSummary";
 
 const ResumeBuilder = () => {
   const { resumeId } = useParams();
@@ -99,6 +101,15 @@ const ResumeBuilder = () => {
                       setResumeData((prev) => ({ ...prev, template }))
                     }
                   />
+                  <ColorPicker
+                    selectedColor={resumeData.accent_color}
+                    onChange={(color) =>
+                      setResumeData((prev) => ({
+                        ...prev,
+                        accent_color: color,
+                      }))
+                    }
+                  />
                 </div>
                 <div className="flex items-center gap-50">
                   {activeSectionIndex !== 0 && (
@@ -148,6 +159,7 @@ const ResumeBuilder = () => {
                     setRemoveBackground={setRemoveBackground}
                   />
                 )}
+                {activeSection.id ==="summary" && <ProfessionalSummary  />}
               </div>
             </div>
           </div>
