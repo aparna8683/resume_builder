@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
-import HOME from "./Pages/Home.jsx";
+import HOME from "./Pages/Home";
 import Layout from "./Pages/Layout";
 import Dashboard from "./Pages/Dashboard";
 import ResumeBuilder from "./Pages/ResumeBuilder";
@@ -44,7 +44,7 @@ const App = () => {
         </Route>
 
         <Route path="view/:resumeId" element={<Preview />} />
-        {/* <Route path="login" element={<Login />} /> */}
+        <Route path="login" element={<Login />} />
 
         <Route />
       </Routes>
