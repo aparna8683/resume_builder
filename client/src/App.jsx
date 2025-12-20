@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
-import HOME from "./Pages/HOME.JSX";
+import HOME from "./Pages/Home.jsx";
 import Layout from "./Pages/Layout";
 import Dashboard from "./Pages/Dashboard";
 import ResumeBuilder from "./Pages/ResumeBuilder";
