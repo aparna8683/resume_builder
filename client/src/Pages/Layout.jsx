@@ -6,6 +6,7 @@ import { Loader } from "lucide-react";
 import Login from "./Login";
 
 const Layout = () => {
+  
   const { user, loading } = useSelector((state) => state.auth);
   if (loading) {
     return (

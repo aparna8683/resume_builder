@@ -1,6 +1,7 @@
 import Resume from "../Models/resume.js";
 import ai from "../configs/ai.js";
 
+
 export const enhanceProfessionalSummary= async(req, res)=>{
     try{ 
         const {userContent}= req.body;
