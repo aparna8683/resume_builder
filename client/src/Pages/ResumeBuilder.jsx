@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import PersonalIInfoForm from "../Components/PersonalIInfoForm";
 import ResumePreview from "../Components/ResumePreview";
+import Education from "../Components/Education";
 import TemplateSelector from "../Components/TemplateSelector";
 import ColorPicker from "../Components/ColorPicker";
 import ProfessionalSummary from "../Components/Home/ProfessionalSummary";
@@ -44,7 +45,7 @@ const ResumeBuilder = () => {
       name: "Experience",
       icon: GraduationCap,
     },
-    { id: "education", name: "education", icon: Briefcase },
+    { id: "education", name: "Education", icon: Briefcase },
     {
       id: "projects",
       name: "Projects",
@@ -169,6 +170,14 @@ const ResumeBuilder = () => {
                     }}
                   />
                 )}
+                {activeSection.id === "education" && (
+                  <Education data={resumeData.education} 
+                  onChange={(data)=>{
+                    setResumeData((prev)=>({...prev, education:data}))
+                  }} />
+                )}
+                {activeSection.id==="projects" }
+                {activeSection.id==="skills"}
               </div>
             </div>
           </div>

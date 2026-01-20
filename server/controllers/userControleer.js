@@ -1,16 +1,13 @@
 import Resume from "../Models/resume.js";
 import User from "../Models/User.js";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
 
-// Generate JWT token
 const generateToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, {
     expiresIn: "7d",
   });
 };
 
-// ================= REGISTER =================
 export const registeredUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -72,7 +69,6 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// ================= GET USER =================
 export const getUserById = async (req, res) => {
   try {
     const userId = req.userId;
@@ -89,7 +85,6 @@ export const getUserById = async (req, res) => {
   }
 };
 
-// ================= USER RESUMES =================
 export const getUserResume = async (req, res) => {
   try {
     const userId = req.userId;

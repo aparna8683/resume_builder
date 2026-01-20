@@ -1,7 +1,5 @@
 import Resume from "../Models/resume.js";
 import ai from "../configs/ai.js";
-
-
 export const enhanceProfessionalSummary= async(req, res)=>{
     try{ 
         const {userContent}= req.body;
@@ -99,15 +97,8 @@ export const uploadResume= async(req, res)=>{
         degree:{type:String},
         field:{type:String},
         Gpa:{type:String},
-        graduation_date:{type:String}
-
-
-    }],
-
-
-        `
-        
-      const response=  await ai.openai.chat.completions.create({
+        graduation_date:{type:String}}],`
+        const response=  await ai.openai.chat.completions.create({
             model:process.env.OPENAI_MODEL ,
             messages: [
         { role: "system", content: systemPrompt },
@@ -116,7 +107,7 @@ export const uploadResume= async(req, res)=>{
             content: userPrompt,
         },
     ], 
-     respinse_format:{type: 'json_object'}            
+     response_format:{type: 'json_object'}            
         })
         const extractedData=response.choices[0].message.content;
         const parsedData= JSON.parse(extractedData)

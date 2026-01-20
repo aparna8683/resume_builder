@@ -9,7 +9,6 @@ const Login = () => {
   const dispatch = useDispatch();
   const [state, setState] = React.useState("login");
 
-  // state for input value
   const [data, setData] = React.useState({
     name: "",
     email: "",
