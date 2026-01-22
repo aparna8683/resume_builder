@@ -18,7 +18,6 @@ const Education = ({ data, onChange }) => {
     onChange(updated);
   };
 
-  // ✅ FIXED: function name + onChange
   const updateEducation = (index, field, value) => {
     const updated = [...data];
     updated[index] = { ...updated[index], [field]: value };
