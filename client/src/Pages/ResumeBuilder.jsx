@@ -6,10 +6,14 @@ import {
   Briefcase,
   ChevronLeft,
   ChevronRight,
+  DownloadIcon,
+  EyeIcon,
+  EyeOffIcon,
   FileText,
   FolderIcon,
   GraduationCap,
   Minimize,
+  Share2,
   Sparkle,
   Sparkles,
   User,
@@ -72,6 +76,23 @@ const ResumeBuilder = () => {
   useEffect(() => {
     loadExistingResume();
   }, []);
+  const changeResumeVisibility = async () => {
+    {
+      setResumeData({ ...resumeData, public: !resumeData.public });
+    }
+  };
+  const handleShare = () => {
+    const frontendURL = window.location.href.split("/app/")[0];
+    const resumeURL = frontendURL + "/view/" + resumeId;
+    if (navigator.share) {
+      navigator.share({ url: resumeURL, text: "My Resume" });
+    } else {
+      alert("Share not supported on this browser.");
+    }
+  };
+  const DownloadResume = () => {
+    window.print();
+  };
   return (
     <div>
       <div className="max-w-7xl mx-auto  p-4 py-6 ">
@@ -163,7 +184,17 @@ const ResumeBuilder = () => {
                     setRemoveBackground={setRemoveBackground}
                   />
                 )}
-                {activeSection.id === "summary" && <ProfessionalSummary />}
+                {activeSection.id === "summary" && (
+                  <ProfessionalSummary
+                    data={resumeData.professional_summary}
+                    onChange={(data) => {
+                      setResumeData((prev) => ({
+                        ...prev,
+                        professional_summary: data,
+                      }));
+                    }}
+                  />
+                )}
                 {activeSection.id === "experience" && (
                   <ExperienceForm
                     data={resumeData.experience}
@@ -198,13 +229,43 @@ const ResumeBuilder = () => {
                 )}
               </div>
               <button className="bg-gradient-to-br from-green-100 to-green-200 ring-green-300 text-green-600 ring hover:ring-green-400 transition-all rounded-all rounded-md px-6 py-2 mt-6 text-sm">
-          Save Changes
-        </button>
+                Save Changes
+              </button>
             </div>
           </div>
           {/* {Right Pannel} */}
           <div className="lg:col-span-7 max-lg:mt-6">
-            <div>{/* {buttons} */}</div>
+            <div className="relative w-full ">
+              <div className="absolute bottom-3 left-0 right-0 flex items-center justify-end gap-4">
+                {resumeData.public && (
+                  <button
+                    onClick={handleShare}
+                    className="flex items-center gap-1 p-2 px-4 text-xs bg-gradient-to-br from-blue-100 to-blue-200 text-blue-600 rounded-lg ring-blue-300 hover:ring transition-colors"
+                  >
+                    <Share2 className="size-4" /> Share
+                  </button>
+                )}
+
+                <button
+                  onClick={changeResumeVisibility}
+                  className="flex items-center gap-1 p-2 px-4 text-xs bg-gradient-to-br from-purple-100 to-purple-200 text-purple-600 rounded-lg ring-purple-300 hover:ring transition-colors"
+                >
+                  {resumeData.public ? (
+                    <EyeIcon className="size-4" />
+                  ) : (
+                    <EyeOffIcon className="size-4" />
+                  )}
+                  {resumeData.public ? "Public" : "Private"}
+                </button>
+                <button
+                  onClick={DownloadResume}
+                  className="flex items-center gap-1  px-6 text-xs bg-gradient-to-br from-green-100 to-green-200 text-green-600 rounded-lg ring-green-300 hover:ring transition-colors py-2"
+                >
+                  <DownloadIcon className="size-4" />
+                  Download
+                </button>
+              </div>
+            </div>
             <ResumePreview
               data={resumeData}
               template={resumeData.template}
@@ -212,7 +273,6 @@ const ResumeBuilder = () => {
             />
           </div>
         </div>
-        
       </div>
     </div>
   );
