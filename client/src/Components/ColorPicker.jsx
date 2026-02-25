@@ -41,13 +41,13 @@ const ColorPicker = ({ selectedColor, onChange }) => {
                 style={{ backgroundColor: color.value }}
               >
                 {selectedColor === color.value && (
-                  <div className="absolute top-0 left-0 right-0 bottom-4.5 flex items-center justify-center">
+                  <div className="absolute top-0 left-0 right-0 bottom-4 flex items-center justify-center">
                     <Check size={20} className="text-white" />
                   </div>
                 )}
               </div>
 
-              <p className="text-s mt-1 text-gray-600">{color.name}</p>
+              <p className="text-xs mt-1 text-gray-600">{color.name}</p>
             </div>
           ))}
         </div>

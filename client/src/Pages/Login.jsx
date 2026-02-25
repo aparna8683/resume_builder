@@ -1,26 +1,32 @@
 import React from "react";
 import { Lock, Mail, User2Icon } from "lucide-react";
 import { useDispatch } from "react-redux";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import api from "../configs/api";
 import { login } from "../app/features/authslice";
 import toast from "react-hot-toast";
 
 const Login = () => {
   const dispatch = useDispatch();
-  const [state, setState] = React.useState("login");
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const urlState = searchParams.get("state");
 
+  const [state, setState] = React.useState(urlState || "login");
+
+React.useEffect(() => {
+  setState(urlState || "login");
+}, [urlState]);
   const [data, setData] = React.useState({
     name: "",
     email: "",
     password: "",
   });
 
-  // handle change input value
   const onChangeHandler = (e) => {
     setData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  // handle submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -28,91 +34,114 @@ const Login = () => {
       dispatch(login(response.data));
       localStorage.setItem("token", response.data.token);
       toast.success(response.data.message);
+      navigate("/dashboard"); // redirect after login
     } catch (error) {
-      toast(error?.response?.data?.message || error.message);
-      console.error(error);
+      toast.error(error?.response?.data?.message || "Something went wrong");
     }
   };
+
+  const toggleState = () => {
+    const newState = state === "login" ? "register" : "login";
+    setState(newState);
+    navigate(`?state=${newState}`);
+  };
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full sm:w-[350px] text-center border border-zinc-300/60 dark:border-zinc-700 rounded-2xl px-8 bg-white dark:bg-zinc-900"
+        className="w-full sm:w-[380px] text-center border border-zinc-200 
+        rounded-2xl px-8 py-10 bg-white shadow-xl"
       >
-        <h1 className="text-zinc-900 dark:text-white text-3xl mt-10 font-medium">
+        <h1 className="text-zinc-900 text-3xl font-semibold">
           {state === "login" ? "Login" : "Register"}
         </h1>
-        <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-2 pb-6">
+
+        <p className="text-zinc-500 text-sm mt-2 mb-6">
           Please {state === "login" ? "sign in" : "sign up"} to continue
         </p>
 
-        {state != "login" && (
-          <div className="flex items-center w-full mt-4 bg-white dark:bg-zinc-800 border border-zinc-300/80 dark:border-zinc-700 h-12 rounded-full overflow-hidden pl-6 gap-2">
-            {/* User Icon */}
-            <User2Icon size={16} color="#6B7280" />
+        {state !== "login" && (
+          <div
+            className="flex items-center w-full mb-4 bg-zinc-50 
+          border border-zinc-200 h-12 rounded-xl px-4 gap-3 
+          focus-within:border-indigo-400 transition"
+          >
+            <User2Icon size={18} className="text-zinc-400" />
             <input
               type="text"
-              placeholder="Name"
-              className="bg-transparent text-zinc-600 dark:text-zinc-200 placeholder-zinc-500 dark:placeholder-zinc-400 outline-none text-sm w-full h-full"
+              placeholder="Full Name"
               name="name"
               value={data.name}
               onChange={onChangeHandler}
               required
+              className="bg-transparent outline-none text-sm w-full"
             />
           </div>
         )}
 
-        <div className="flex items-center w-full mt-4 bg-white dark:bg-zinc-800 border border-zinc-300/80 dark:border-zinc-700 h-12 rounded-full overflow-hidden pl-6 gap-2">
-          {/* Mail Icon */}
-          <Mail size={19} color="#6B7280" />
+        <div
+          className="flex items-center w-full mb-4 bg-zinc-50 
+        border border-zinc-200 h-12 rounded-xl px-4 gap-3 
+        focus-within:border-indigo-400 transition"
+        >
+          <Mail size={18} className="text-zinc-400" />
           <input
             type="email"
             placeholder="Email"
-            className="bg-transparent text-zinc-600 dark:text-zinc-200 placeholder-zinc-500 dark:placeholder-zinc-400 outline-none text-sm w-full h-full"
             name="email"
             value={data.email}
             onChange={onChangeHandler}
             required
+            className="bg-transparent outline-none text-sm w-full"
           />
         </div>
 
-        <div className="flex items-center mt-4 w-full bg-white dark:bg-zinc-800 border border-zinc-300/80 dark:border-zinc-700 h-12 rounded-full overflow-hidden pl-6 gap-2">
-          {/* Lock Icon */}
-          <Lock size={19} color="#6B7280" />
+        <div
+          className="flex items-center w-full mb-4 bg-zinc-50 
+        border border-zinc-200 h-12 rounded-xl px-4 gap-3 
+        focus-within:border-indigo-400 transition"
+        >
+          <Lock size={18} className="text-zinc-400" />
           <input
             type="password"
             placeholder="Password"
-            className="bg-transparent text-zinc-600 dark:text-zinc-200 placeholder-zinc-500 dark:placeholder-zinc-400 outline-none text-sm w-full h-full"
             name="password"
             value={data.password}
             onChange={onChangeHandler}
             required
+            className="bg-transparent outline-none text-sm w-full"
           />
         </div>
 
-        <div className="mt-5 text-left">
-          <a className="text-sm text-indigo-500 dark:text-indigo-400" href="#">
-            Forgot password?
-          </a>
-        </div>
+        {state === "login" && (
+          <div className="text-right mb-4">
+            <button
+              type="button"
+              className="text-sm text-indigo-500 hover:underline"
+            >
+              Forgot password?
+            </button>
+          </div>
+        )}
 
         <button
           type="submit"
-          className="mt-2 w-full h-11 rounded-full text-white bg-indigo-500 hover:opacity-90 transition-opacity"
+          className="w-full h-12 rounded-xl text-white 
+          bg-indigo-600 hover:bg-indigo-700 
+          transition font-medium"
         >
           {state === "login" ? "Login" : "Create Account"}
         </button>
 
-        <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-3 mb-11">
+        <p className="text-zinc-500 text-sm mt-6">
           {state === "login"
-            ? "Don't have an account? "
-            : "Already have an account? "}
+            ? "Don't have an account?"
+            : "Already have an account?"}
           <button
             type="button"
-            className="text-indigo-500 dark:text-indigo-400"
-            onClick={() =>
-              setState((prev) => (prev === "login" ? "register" : "login"))
-            }
+            onClick={toggleState}
+            className="ml-2 text-indigo-600 hover:underline"
           >
             {state === "login" ? "Register" : "Login"}
           </button>

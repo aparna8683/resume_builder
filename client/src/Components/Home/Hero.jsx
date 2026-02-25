@@ -67,7 +67,7 @@ const Hero = () => {
               className="lucide lucide-menu"
             >
               <path d="M4 5h16M4 12h16M4 19h16" />
-            </svg>
+            </svg>{" "}
           </button>
         </nav>
 
@@ -168,8 +168,8 @@ const Hero = () => {
           </h1>
 
           <p className="max-w-md text-center text-base my-7">
-            Create, edit and downlod professional resumes with AI-Powered
-            assisteance .
+            Create, edit and download professional resumes with AI-Powered
+            assisteance.
           </p>
 
           {/* CTA Buttons */}

@@ -75,11 +75,12 @@ const ResumeBuilder = () => {
   const activeSection = sections[activeSectionIndex];
   useEffect(() => {
     loadExistingResume();
-  }, []);
-  const changeResumeVisibility = async () => {
-    {
-      setResumeData({ ...resumeData, public: !resumeData.public });
-    }
+  }, [resumeId]);
+  const changeResumeVisibility = () => {
+    setResumeData((prev) => ({
+      ...prev,
+      public: !prev.public,
+    }));
   };
   const handleShare = () => {
     const frontendURL = window.location.href.split("/app/")[0];
@@ -118,7 +119,7 @@ const ResumeBuilder = () => {
                 }}
               />
               {/* {section Navigation} */}
-              <div className="flex jusitfy-between items-center mb-6 border-b border-gray-300 py-1">
+              <div className="flex justify-between items-center mb-6 border-b border-gray-300 py-1">
                 <div className="flex items-center gap-2">
                   <TemplateSelector
                     selectedTemplate={resumeData.template}

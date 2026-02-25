@@ -1,6 +1,6 @@
 import React from "react";
 import Title from "./Title";
-import { BookUserIcon } from "lucide-react";
+import { BookUserIcon, Zap } from "lucide-react";
 
 const Testimonials = () => {
   const cardsData = [
@@ -100,12 +100,18 @@ const Testimonials = () => {
         className="flex flex-col items-center my-10 scroll-mt-12"
       >
         <div className="flex items-center gap-2 rounded-full px-6 py-1.5 bg-indigo-300/50 text-sm">
-          <span className="flex items-center gap-1 text-indigo-600 font-medium">
-            <BookUserIcon className="size-4.5 stroke-indigo-400" />
-            Testimonials
-          </span>
+          {/* <span className="flex items-center gap-1 text-indigo-600 font-medium">
+           */}
+          <Zap width={14} />
+          <BookUserIcon className="size-4.5 stroke-indigo-400" />
+          <span>Testimonials</span>
+          {/* </span> */}
         </div>
-        <Title title="build your resumes" description="AI Powered" />
+        <Title
+          title="build your resumes"
+          description="AI-powered resume showcasing data-driven projects, problem-solving skills, and innovative thinking in Artificial Intelligence and Full-Stack Development.
+Focused on building scalable, real-world solutions with strong analytical and leadership abilities."
+        />
 
         <div className="marquee-row w-full mx-auto max-w-5xl overflow-hidden relative">
           <div className="absolute left-0 top-0 h-full w-20 z-10 pointer-events-none bg-gradient-to-r from-white to-transparent"></div>

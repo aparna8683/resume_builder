@@ -55,7 +55,7 @@ const PersonalInfoForm = ({
       key: "linkedin",
       label: "LinkedIn Profile",
       icon: Linkedin,
-      type: "URL",
+      type: "url",
     },
     {
       key: "website",
@@ -132,8 +132,8 @@ const PersonalInfoForm = ({
                 type={field.type}
                 value={data[field.key] || ""}
                 onChange={(e) => handleChange(field.key, e.target.value)}
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-500 focus:border=-blue-500 outline-none transition-colors text-sm"
-                placeholder={`Enter your ${field.label.toLocaleLowerCase()}`}
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors text-sm"
+                placeholder={`Enter your ${field.label.toLowerCase()}`}
                 required={field.required}
               />
             </div>

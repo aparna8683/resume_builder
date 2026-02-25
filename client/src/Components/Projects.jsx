@@ -1,5 +1,5 @@
 import React from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Briefcase } from "lucide-react";
 
 const Projects = ({ data, onChange }) => {
   const addProject = () => {
@@ -17,7 +17,7 @@ const Projects = ({ data, onChange }) => {
   const updateProject = (index, field, value) => {
     const updated = [...data];
     updated[index] = { ...updated[index], [field]: value };
-    onchange(updated);
+    onChange(updated);
   };
   return (
     <div className="space-y-6 mt-6">

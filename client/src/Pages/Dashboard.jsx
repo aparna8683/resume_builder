@@ -46,10 +46,22 @@ const Dashboard = () => {
   };
   const editTitle = async (event) => {
     event.preventDefault();
+    if (!title.trim()) return;
+
+    setAllResumes((prev) =>
+      prev.map((resume) =>
+        resume._id === editResumeId
+          ? { ...resume, title: title, updatedAt: new Date() }
+          : resume,
+      ),
+    );
+
+    setEditResumeId(null);
+    setTitle("");
   };
   const deleteResume = async (resumeId) => {
     const confirm = window.confirm(
-      "Are you sure you want to delete this resume?"
+      "Are you sure you want to delete this resume?",
     );
     if (confirm) {
       setAllResumes((prev) => prev.filter((resume) => resume._id !== resumeId));
@@ -282,7 +294,7 @@ const Dashboard = () => {
             <XIcon
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
               onClick={() => {
-                setEditResumeId("");
+                setEditResumeId(null);
                 setTitle("");
               }}
             />

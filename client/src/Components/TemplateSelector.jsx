@@ -1,7 +1,7 @@
 import React from "react";
 import { useState } from "react";
 import { Layout, Check } from "lucide-react";
-     
+
 const TemplateSelector = ({ selectedTemplate, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const templates = [
@@ -36,7 +36,7 @@ const TemplateSelector = ({ selectedTemplate, onChange }) => {
         <span className="max-sm:hidden">Template</span>
       </button>
       {isOpen && (
-        <div>
+        <div className="absolute mt-2 w-64 bg-white shadow-lg border rounded-lg p-2 space-y-2 z-50">
           {templates.map((template) => (
             <div
               key={template.id}

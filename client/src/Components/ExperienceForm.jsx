@@ -23,7 +23,6 @@ const ExperienceForm = ({ data, onChange }) => {
     updated[index] = { ...updated[index], [field]: value };
     onChange(updated);
   };
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -37,7 +36,7 @@ const ExperienceForm = ({ data, onChange }) => {
 
         <button
           onClick={addExperience}
-          className="flex items-center gap-1 rounded-lg bg-blue-200 text-blue-700 hover:bg-blue-200 transition-colors text-sm px-3 py-1"
+          className="flex items-center gap-1 rounded-lg bg-blue-200 text-blue-700 hover:bg-blue-300 transition-colors text-sm px-3 py-1"
         >
           <Plus className="size-4" />
           Add Experience
@@ -116,9 +115,14 @@ const ExperienceForm = ({ data, onChange }) => {
                     type="checkbox"
                     checked={exp.is_current}
                     onChange={(e) => {
-                      updateExperience(index, "is_current", e.target.checked);
-                      if (e.target.checked)
-                        updateExperience(index, "end_date", "");
+                      const checked = e.target.checked;
+                      const updated = [...data];
+                      updated[index] = {
+                        ...updated[index],
+                        is_current: checked,
+                        end_date: checked ? "" : updated[index].end_date,
+                      };
+                      onChange(updated);
                     }}
                     className="rounded border-gray-300"
                   />
