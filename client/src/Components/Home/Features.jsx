@@ -1,138 +1,124 @@
 import React from "react";
 import Title from "./Title";
-import { Zap } from "lucide-react";
+import { Zap, FileText, WandSparkles, Download } from "lucide-react";
 
 const Features = () => {
-  const [isHover, setIsHover] = React.useState(false);
+  const features = [
+    {
+      icon: FileText,
+      title: "Smart Resume Builder",
+      desc: "Create a clean, professional resume with guided sections and ready-to-use templates.",
+      color: "violet",
+    },
+    {
+      icon: WandSparkles,
+      title: "AI Content Suggestions",
+      desc: "Improve your summary, experience, and skills with AI-powered writing assistance.",
+      color: "green",
+    },
+    {
+      icon: Download,
+      title: "Download & Share",
+      desc: "Export your resume and share a public preview link whenever you need.",
+      color: "orange",
+    },
+  ];
+
+  const colorClasses = {
+    violet: "hover:bg-violet-100 hover:border-violet-300 text-violet-600",
+    green: "hover:bg-green-100 hover:border-green-300 text-green-600",
+    orange: "hover:bg-orange-100 hover:border-orange-300 text-orange-600",
+  };
 
   return (
     <div
       id="features"
-      className="flex flex-col items-center my-10 scroll-mt-12"
+      className="flex flex-col items-center my-16 scroll-mt-12 px-4"
     >
-      <div className="flex items-center gap-2 rounded-full px-6 py-1.5 bg-indigo-300/50 text-sm text-indigo-600">
-        <span className="flex items-center gap-1 text-indigo-600 font-medium">
-          {/*  */}
-          <Zap width={14} />
-          Explore
-        </span>
+      <div className="flex items-center gap-2 rounded-full px-6 py-1.5 bg-indigo-100 text-sm text-indigo-600">
+        <Zap width={14} />
+        <span className="font-medium">Features</span>
       </div>
+
       <Title
-        title="Build your resume"
-        description="Our streamlined process helps you create a professional resume with intelligent AI-Powered tools and features"
+        title="Build your resume faster"
+        description="Create, improve, preview, and share your professional resume with simple AI-powered tools."
       />
 
-      <div className="flex flex-col md:flex-row items-center xl:mt-10">
-        <img
-          className="max-w-2xl w-full xl:-ml-32"
-          src="https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/features/group-image-1.png"
-          alt=""
-        />
+      <div className="flex flex-col md:flex-row items-center gap-10 xl:mt-10 max-w-6xl w-full">
+        <div className="w-full md:w-1/2 flex justify-center">
+          <div className="relative w-full max-w-md rounded-3xl bg-white shadow-2xl border border-zinc-100 p-6">
+            <div className="h-4 w-28 rounded-full bg-zinc-200 mb-5" />
+            <div className="h-3 w-full rounded-full bg-zinc-100 mb-3" />
+            <div className="h-3 w-5/6 rounded-full bg-zinc-100 mb-6" />
 
-        <div
-          className="px-4 md:px-0"
-          onMouseEnter={() => setIsHover(true)}
-          onMouseLeave={() => setIsHover(false)}
-        >
-          {/* Card 1 */}
-          <div className="flex items-center justify-center gap-6 max-w-md group cursor-pointer">
-            <div
-              className={`p-6 group-hover:bg-violet-100 border border-transparent group-hover:border-violet-300 flex gap-4 rounded-xl transition-colors ${
-                !isHover ? "border-violet-300 bg-violet-100" : ""
-              }`}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="size-6 stroke-violet-600"
-              >
-                <path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z" />
-                <circle cx="16.5" cy="7.5" r=".5" fill="currentColor" />
-              </svg>
-              <div className="space-y-2">
-                <h3 className="text-base font-semibold text-slate-700">
-                  Real-Time Analytics
-                </h3>
-                <p className="text-sm text-slate-600 max-w-xs">
-                  Get instant insights into your finances with live dashboards.
-                </p>
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-zinc-100 p-4">
+                <div className="h-3 w-24 rounded-full bg-indigo-200 mb-3" />
+                <div className="h-2 w-full rounded-full bg-zinc-100 mb-2" />
+                <div className="h-2 w-4/5 rounded-full bg-zinc-100" />
+              </div>
+
+              <div className="rounded-2xl border border-zinc-100 p-4">
+                <div className="h-3 w-28 rounded-full bg-green-200 mb-3" />
+                <div className="h-2 w-full rounded-full bg-zinc-100 mb-2" />
+                <div className="h-2 w-3/4 rounded-full bg-zinc-100" />
+              </div>
+
+              <div className="rounded-2xl border border-zinc-100 p-4">
+                <div className="h-3 w-20 rounded-full bg-orange-200 mb-3" />
+                <div className="h-2 w-full rounded-full bg-zinc-100 mb-2" />
+                <div className="h-2 w-2/3 rounded-full bg-zinc-100" />
               </div>
             </div>
           </div>
-
-          {/* Card 2 */}
-          <div className="flex items-center justify-center gap-6 max-w-md group cursor-pointer">
-            <div className="p-6 group-hover:bg-green-100 border border-transparent group-hover:border-green-300 flex gap-4 rounded-xl transition-colors">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="size-6 stroke-green-600"
-              >
-                <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z" />
-              </svg>
-              <div className="space-y-2">
-                <h3 className="text-base font-semibold text-slate-700">
-                  Bank-Grade Security
-                </h3>
-                <p className="text-sm text-slate-600 max-w-xs">
-                  End-to-end encryption, 2FA, compliance with GDPR standards.
-                </p>
-              </div>
+        </div>
+        <div className="w-full md:w-1/2 flex justify-center">
+          <div className="bg-white p-6 rounded-3xl shadow-2xl border border-zinc-100 w-full max-w-md transition hover:scale-[1.02]">
+            {/* Header */}
+            <div className="mb-4">
+              <h2 className="text-xl font-bold text-zinc-800">John Doe</h2>
+              <p className="text-sm text-zinc-500">Software Engineer</p>
             </div>
-          </div>
 
-          {/* Card 3 */}
-          <div className="flex items-center justify-center gap-6 max-w-md group cursor-pointer">
-            <div className="p-6 group-hover:bg-orange-100 border border-transparent group-hover:border-orange-300 flex gap-4 rounded-xl transition-colors">
-              <svg
-                className="size-6 stroke-orange-600"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 15V3" />
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <path d="m7 10 5 5 5-5" />
-              </svg>
-              <div className="space-y-2">
-                <h3 className="text-base font-semibold text-slate-700">
-                  Customizable Reports
-                </h3>
-                <p className="text-sm text-slate-600 max-w-xs">
-                  Export professional, audit-ready financial reports for tax or
-                  internal review.
-                </p>
+            {/* Divider */}
+            <div className="h-px bg-zinc-200 my-3" />
+
+            {/* Experience */}
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold text-indigo-600 mb-1">
+                Experience
+              </h3>
+              <p className="text-xs text-zinc-600 leading-relaxed">
+                Built scalable web applications using React, Node.js, and
+                MongoDB. Worked on real-time dashboards and optimized
+                performance.
+              </p>
+            </div>
+
+            {/* Skills */}
+            <div>
+              <h3 className="text-sm font-semibold text-green-600 mb-1">
+                Skills
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                <span className="text-xs bg-zinc-100 px-2 py-1 rounded-md">
+                  React
+                </span>
+                <span className="text-xs bg-zinc-100 px-2 py-1 rounded-md">
+                  Node.js
+                </span>
+                <span className="text-xs bg-zinc-100 px-2 py-1 rounded-md">
+                  MongoDB
+                </span>
+                <span className="text-xs bg-zinc-100 px-2 py-1 rounded-md">
+                  Express
+                </span>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        * { font-family: 'Poppins', sans-serif; }
-      `}</style>
     </div>
   );
 };

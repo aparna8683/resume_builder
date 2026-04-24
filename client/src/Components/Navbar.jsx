@@ -1,11 +1,15 @@
 import React from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import { login, logout } from "../app/features/authslice";
 
 const Navbar = () => {
+  const {user}= useSelector(state=> state.auth)
+  const dispatch= useDispatch()
   const navigate = useNavigate();
-  const user = { name: "John Doe" };
   function logoutUser() {
     navigate("/");
+    dispatch(logout())
   }
   return (
     <div className="shadow bg-white">

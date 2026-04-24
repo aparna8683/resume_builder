@@ -1,7 +1,17 @@
-import { Plus, Trash2, Sparkles, Briefcase } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
+import { Plus, Trash2, Sparkles, Briefcase, Loader2 } from "lucide-react";
+import { toast } from "react-hot-toast";
+import axios from "axios";
+import api from "../configs/api";
+
+// Axios instance for API calls
 
 const ExperienceForm = ({ data, onChange }) => {
+  const { token } = useSelector((state) => state.auth);
+  const [generatingIndex, setGeneratingIndex] = useState(-1);
+
+  // Add a new experience entry
   const addExperience = () => {
     const newExperience = {
       company: "",
@@ -14,15 +24,40 @@ const ExperienceForm = ({ data, onChange }) => {
     onChange([...data, newExperience]);
   };
 
+  // Remove an experience entry
   const removeExperience = (index) => {
     onChange(data.filter((_, i) => i !== index));
   };
 
+  // Update a field in an experience entry
   const updateExperience = (index, field, value) => {
     const updated = [...data];
     updated[index] = { ...updated[index], [field]: value };
     onChange(updated);
   };
+
+  // Generate AI-enhanced job description
+  const generateDescription = async (index) => {
+    const exp = data[index];
+    if (!exp.position || !exp.company) return;
+
+    setGeneratingIndex(index);
+    const prompt = `Enhance this job description: ${exp.description} for the role of ${exp.position} at ${exp.company}`;
+
+    try {
+      const { data } = await api.post(
+        "/api/ai/enhance-job-desc",
+        { userContent: prompt },
+        { headers: { Authorization: token } },
+      );
+      updateExperience(index, "description", data.enhancedContent);
+    } catch (error) {
+      toast.error(error.message || "Failed to enhance description");
+    } finally {
+      setGeneratingIndex(-1);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -135,8 +170,22 @@ const ExperienceForm = ({ data, onChange }) => {
                     <label className="text-sm font-medium text-gray-700">
                       Job Description
                     </label>
-                    <button className="flex items-center gap-1 px-2 py-1 hover:bg-purple-200 rounded transition-colors">
-                      <Sparkles className="w-3 h-3" /> Enhance with AI
+                    <button
+                      onClick={() => generateDescription(index)}
+                      disabled={
+                        generatingIndex === index ||
+                        !exp.position ||
+                        !exp.company
+                      }
+                      className="flex items-center gap-1 px-2 py-1 hover:bg-purple-200 rounded transition-colors"
+                    >
+                      {generatingIndex === index ? (
+                        <Loader2 className="animate-spin w-4 h-4" />
+                      ) : (
+                        <>
+                          <Sparkles className="w-3 h-3" /> Enhance with AI
+                        </>
+                      )}
                     </button>
                   </div>
 

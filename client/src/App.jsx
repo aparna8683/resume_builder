@@ -9,7 +9,7 @@ import Preview from "./Pages/Preview";
 import Login from "./Pages/Login";
 import { useDispatch } from "react-redux";
 import { login, setLoading } from "./app/features/authslice";
-import { Toaster } from "react-hot-toast";
+import { Toaster } from "react-hot-toast"; 
 const App = () => {
   const dispatch = useDispatch();
   const getUserData = async () => {
@@ -46,7 +46,6 @@ const App = () => {
 
         <Route path="view/:resumeId" element={<Preview />} />
 
-        <Route />
       </Routes>
     </>
   );

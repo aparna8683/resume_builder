@@ -17,7 +17,7 @@ const TemplateSelector = ({ selectedTemplate, onChange }) => {
     },
     {
       id: "minimal-image",
-      name: "Minimnal Image",
+      name: "Minimal Image",
       preview: "Sleek Design With Claasic Template",
     },
     {
@@ -47,7 +47,7 @@ const TemplateSelector = ({ selectedTemplate, onChange }) => {
               className={`relative p-3 border rounded-md cursor-pointer transition-all ${
                 selectedTemplate === template.id
                   ? "border-blue-400 bg-blue-100"
-                  : "border-gray-300 hover:border-gray-400 hover:bg-gray"
+                  : "border-gray-300 hover:border-gray-400 hover:bg-gray-100"
               }`}
             >
               {selectedTemplate === template.id && (

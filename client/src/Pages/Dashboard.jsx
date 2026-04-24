@@ -6,12 +6,19 @@ import {
   UploadCloudIcon,
   XIcon,
   FilePenLineIcon,
+  LoaderCircleIcon,
 } from "lucide-react";
-import { dummyResumeData } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
+import api from "../configs/api";
+import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
+import pdfToText from "react-pdftotext";
+import Loader from "../Components/Loader";
 
 const Dashboard = () => {
+  const { user, token } = useSelector((state) => state.auth);
   const colors = ["#9333ea", "#d97706", "#dc2626", "#0284c7", "#16a34a"];
+  const [isLoading, setIsLoading] = useState(false);
 
   const [allResumes, setAllResumes] = useState([]);
   const [showCreateResumes, setShowCreateResumes] = useState(false);
@@ -21,50 +28,124 @@ const Dashboard = () => {
   const [editResumeId, setEditResumeId] = useState(null);
   const navigate = useNavigate();
 
-  // Load dummy data
   const loadAllResumes = async () => {
-    setAllResumes(dummyResumeData);
+    try {
+      const token = localStorage.getItem("token");
+
+      const { data } = await api.get("/api/resume", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setAllResumes(data.resumes);
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || "all resume loading failed failed",
+      );
+    }
   };
 
   // Create new resume handler
   const createResume = async (event) => {
     event.preventDefault();
     if (!title.trim()) return;
-    setShowCreateResumes(false);
-    setTitle("");
-    navigate(`/app/builder/res123`);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const { data } = await api.post(
+        "/api/resume/create",
+        { title },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      setAllResumes([...allResumes, data.resume]);
+
+      setShowCreateResumes(false);
+      setTitle("");
+
+      navigate(`/app/builder/${data.resume._id}`);
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Resume creation failed");
+    }
   };
 
   // Upload resume handler
   const uploadResume = async (event) => {
     event.preventDefault();
-    if (!resume || !title.trim()) return;
-    setShowUploadResume(false);
-    setTitle("");
-    setResume(null);
-    navigate(`/app/builder/res123`);
+    setIsLoading(true);
+    if (!resume || !title.trim()) {
+      setIsLoading(false);
+      return;
+    }
+    try {
+      const resumeText = await pdfToText(resume);
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("resumeText", resumeText);
+      formData.append("resume", resume);
+
+      const { data } = await api.post(
+        "/api/ai/upload-resume",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      setShowUploadResume(false);
+      setTitle("");
+      setResume(null);
+      navigate(`/app/builder/${data.newResume._id}`);
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Resume upload failed");
+    }
+    setIsLoading(false);
   };
   const editTitle = async (event) => {
     event.preventDefault();
+
     if (!title.trim()) return;
+    try {
+      const { data } = await api.put(
+        `/api/resume/update`,
+        { resumeId: editResumeId, resumeData: { title } },
+        { headers: { Authorization: token } },
+      );
 
-    setAllResumes((prev) =>
-      prev.map((resume) =>
-        resume._id === editResumeId
-          ? { ...resume, title: title, updatedAt: new Date() }
-          : resume,
-      ),
-    );
+      setAllResumes(
+        allResumes.map((resume) =>
+          resume._id === editResumeId ? { ...resume, title } : resume,
+        ),
+      );
 
-    setEditResumeId(null);
-    setTitle("");
+      setEditResumeId(null);
+      setTitle("");
+      toast.success(data.message);
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || "Resume title updation failed",
+      );
+    }
   };
   const deleteResume = async (resumeId) => {
     const confirm = window.confirm(
       "Are you sure you want to delete this resume?",
     );
-    if (confirm) {
-      setAllResumes((prev) => prev.filter((resume) => resume._id !== resumeId));
+    try {
+      if (confirm) {
+        const { data } = await api.delete(`/api/resume/delete/${resumeId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setAllResumes(allResumes.filter((resume) => resume._id !== resumeId));
+        toast.success(data.message);
+      }
+    } catch (error) {
+      toast.error(error?.responsse?.data?.message || errro.message);
     }
   };
 
@@ -246,10 +327,14 @@ const Dashboard = () => {
             />
 
             <button
+              disabled={isLoading}
               type="submit"
-              className="w-full py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+              className="w-full py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
             >
-              Upload Resume
+              {isLoading && (
+                <LoaderCircleIcon className="animate-spin size-4 text-white" />
+              )}
+              {isLoading ? "...uploading" : "Upload Resume"}
             </button>
 
             <XIcon

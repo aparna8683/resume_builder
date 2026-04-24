@@ -1,6 +1,5 @@
 import React from "react";
 import { Plus, Briefcase, Trash2 } from "lucide-react";
-
 const Education = ({ data, onChange }) => {
   const addEducation = () => {
     const newEducation = {
@@ -64,7 +63,7 @@ const Education = ({ data, onChange }) => {
                 <button
                   type="button"
                   onClick={() => removeEducation(index)}
-                  className="text-red-500 hover:text-red-700 transition-colors"
+                  className="text-red-500 hover:text-red-700 transition-colors "
                 >
                   <Trash2 className="size-4" />
                 </button>
