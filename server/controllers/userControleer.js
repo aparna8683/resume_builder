@@ -37,6 +37,8 @@ export const registeredUser = async (req, res) => {
       user: newUser,
     });
   } catch (error) {
+      console.log("REGISTER ERROR:", error);
+
     return res.status(400).json({ message: error.message });
   }
 };

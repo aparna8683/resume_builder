@@ -1,9 +1,15 @@
 import jwt from "jsonwebtoken";
 const protect=async (req,res, next)=>{
-    const token= req.headers.authorization;
-    if(!token)
-        return res.status(401).json({message:"Unauthorized"})
-    try{
+    const authHeaders= req.headers.authorization;
+    if(!authHeaders){
+        return res.status(401).json({message:"Unauthorized"
+        })
+    } 
+
+    try{ 
+        const token = authHeaders.startsWith("Bearer ")
+        ? authHeaders.split(" ")[1]:
+        authHeaders;
         const decoded= jwt.verify(token, process.env.JWT_SECRET) ;
         req.userId=decoded.userId
         next();        

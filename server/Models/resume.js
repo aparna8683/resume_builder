@@ -89,9 +89,6 @@ const resumeSchema = new mongoose.Schema(
   }
 );
 
-resumeSchema.index({ userId: 1 });
-resumeSchema.index({ public: 1 });
-
 const Resume = mongoose.model("Resume", resumeSchema);
 
 export default Resume;

@@ -1,11 +1,10 @@
 import fs from "fs";
 import Resume from "../Models/resume.js";
 import imagekit from "../configs/imageKit.js";
+import mongoose from "mongoose";
 
 
-// ============================
-// Create Resume
-// ============================
+    // Create Resume
 export const createResume = async (req, res) => {
   try {
     const userId = req.userId;
@@ -30,9 +29,7 @@ export const createResume = async (req, res) => {
 };
 
 
-// ============================
 // Delete Resume
-// ============================
 export const deleteResume = async (req, res) => {
   try {
     const userId = req.userId;
@@ -62,13 +59,15 @@ export const deleteResume = async (req, res) => {
 };
 
 
-// ============================
 // Get Resume By ID (Private)
-// ============================
 export const getResumeById = async (req, res) => {
   try {
     const userId = req.userId;
     const { resumeId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(resumeId)) {
+      return res.status(400).json({ message: "Invalid resume ID" });
+    }
 
     const resume = await Resume.findOne(
       { userId, _id: resumeId },
@@ -92,17 +91,19 @@ export const getResumeById = async (req, res) => {
 };
 
 
-// ============================
 // Get Resume By ID (Public)
-// ============================
 export const getPublicResumeById = async (req, res) => {
   try {
     const { resumeId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(resumeId)) {
+      return res.status(400).json({ message: "Invalid resume ID" });
+    }
 
     const resume = await Resume.findOne({
       public: true,
       _id: resumeId,
     });
+    
 
     if (!resume) {
       return res.status(404).json({
@@ -121,16 +122,19 @@ export const getPublicResumeById = async (req, res) => {
 };
 
 
-// ============================
 // Update Resume
-// ============================
 export const updateResume = async (req, res) => {
   try {
     const userId = req.userId;
     const { resumeId, resumeData, removeBackground } = req.body;
     const image = req.file;
 
-    let resumeDataCopy = JSON.parse(resumeData);
+    let resumeDataCopy ;
+    if( typeof resumeData==='string' )
+      resumeDataCopy= await JSON.parse(JSON.stringify(resumeData));
+    else{
+      resumeDataCopy= structuredClone(resumeData)
+    }
 
     // If image uploaded
     if (image) {
@@ -177,3 +181,21 @@ export const updateResume = async (req, res) => {
     });
   }
 };
+export const getAllResumes = async (req, res)=>{
+  try{ 
+    const userId= req.userId;
+    const resumes= await Resume.find({
+      userId
+    },
+    { __v : 0}
+
+  ).sort({updatedAt: -1})
+  return res.status(200).json({resumes})
+
+  } catch(error){
+    console.log(error);
+    return res.status(500).json({
+      message:"Failed to fetch resumes",
+    })
+  }
+}
