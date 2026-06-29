@@ -1,4 +1,4 @@
-import { Plus, Sparkle,Sparkles, X } from "lucide-react";
+import { Plus, Sparkles, X } from "lucide-react";
 import React, { useState } from "react";
 
 const Skills = ({ data, onChange }) => {
@@ -29,19 +29,20 @@ const Skills = ({ data, onChange }) => {
           Add your technical and soft skills
         </p>
       </div>
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row">
         <input
           type="text"
           placeholder="Enter a skill (e.g. , JavaScript, Project Management )"
-          className="flex-1 px-3 py-2 text-sm border border-gray-400"
+          className="min-w-0 flex-1 border border-gray-300 px-3 py-2 text-sm"
           onChange={(e) => setNewSkill(e.target.value)}
           value={newSkill}
           onKeyDown={handleKeyPress}
         />
         <button
+          type="button"
           onClick={addSkill}
           disabled={!newSkill.trim()}
-          className="flex items-center gap-1 bg-blue-400 px-4 py-2 text-sm rounded-lg hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex min-h-10 items-center justify-center gap-1 rounded-lg bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-200 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Plus className="size-4" />
           Add
@@ -57,8 +58,10 @@ const Skills = ({ data, onChange }) => {
             >
               <div>{skill}</div>
               <button
+                type="button"
                 className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
                 onClick={() => removeSkill(index)}
+                aria-label={`Remove ${skill}`}
               >
                 <X className="w-3 h-3" />
               </button>
@@ -69,7 +72,9 @@ const Skills = ({ data, onChange }) => {
         <div className="text-center py-6 text-gray-500">
           <Sparkles className="w-10 h-10 mx-auto mb-2 text-gray-300" />
           <h3 className="font-semibold text-sm">No Skills Added yet</h3>
-          <p className="text-sm text-color-black p-1">Click Add button to enter your tecnical and soft skills </p>
+          <p className="p-1 text-sm text-gray-600">
+            Click Add button to enter your technical and soft skills
+          </p>
 
         </div>
       )}

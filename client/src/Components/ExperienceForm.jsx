@@ -2,10 +2,7 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { Plus, Trash2, Sparkles, Briefcase, Loader2 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import axios from "axios";
 import api from "../configs/api";
-
-// Axios instance for API calls
 
 const ExperienceForm = ({ data, onChange }) => {
   const { token } = useSelector((state) => state.auth);
@@ -41,14 +38,26 @@ const ExperienceForm = ({ data, onChange }) => {
     const exp = data[index];
     if (!exp.position || !exp.company) return;
 
+    const jobDescription = exp.description ?? "";
+    if (!jobDescription.trim()) {
+      toast.error("Please enter a job description before enhancing");
+      return;
+    }
+
     setGeneratingIndex(index);
-    const prompt = `Enhance this job description: ${exp.description} for the role of ${exp.position} at ${exp.company}`;
+    const payload = {
+      userContent: jobDescription,
+      position: exp.position,
+      company: exp.company,
+    };
+
+    console.log("Enhance with AI payload:", payload);
 
     try {
       const { data } = await api.post(
         "/api/ai/enhance-job-desc",
-        { userContent: prompt },
-        { headers: { Authorization: token } },
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       updateExperience(index, "description", data.enhancedContent);
     } catch (error) {
@@ -61,7 +70,7 @@ const ExperienceForm = ({ data, onChange }) => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="flex items-center gap-3 text-lg font-semibold text-gray-900">
             Professional Experience
@@ -70,8 +79,9 @@ const ExperienceForm = ({ data, onChange }) => {
         </div>
 
         <button
+          type="button"
           onClick={addExperience}
-          className="flex items-center gap-1 rounded-lg bg-blue-200 text-blue-700 hover:bg-blue-300 transition-colors text-sm px-3 py-1"
+          className="flex min-h-9 items-center gap-1 rounded-lg bg-blue-100 px-3 py-1.5 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-200"
         >
           <Plus className="size-4" />
           Add Experience
@@ -96,8 +106,10 @@ const ExperienceForm = ({ data, onChange }) => {
               <div className="flex justify-between items-start">
                 <h4 className="font-semibold">Experience {index + 1}</h4>
                 <button
+                  type="button"
                   onClick={() => removeExperience(index)}
                   className="text-red-500 hover:text-red-700"
+                  aria-label={`Remove experience ${index + 1}`}
                 >
                   <Trash2 size={20} />
                 </button>
@@ -171,13 +183,14 @@ const ExperienceForm = ({ data, onChange }) => {
                       Job Description
                     </label>
                     <button
+                      type="button"
                       onClick={() => generateDescription(index)}
                       disabled={
                         generatingIndex === index ||
                         !exp.position ||
                         !exp.company
                       }
-                      className="flex items-center gap-1 px-2 py-1 hover:bg-purple-200 rounded transition-colors"
+                      className="flex min-h-8 items-center gap-1 rounded px-2 py-1 text-sm text-purple-700 transition-colors hover:bg-purple-100 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {generatingIndex === index ? (
                         <Loader2 className="animate-spin w-4 h-4" />

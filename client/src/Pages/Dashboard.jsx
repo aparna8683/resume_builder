@@ -82,6 +82,11 @@ const Dashboard = () => {
     }
     try {
       const resumeText = await pdfToText(resume);
+      if (!resumeText?.trim()) {
+        toast.error("Could not extract text from this PDF");
+        setIsLoading(false);
+        return;
+      }
       const token = localStorage.getItem("token");
       const formData = new FormData();
       formData.append("title", title);
@@ -100,6 +105,9 @@ const Dashboard = () => {
       setShowUploadResume(false);
       setTitle("");
       setResume(null);
+      if (data.message) {
+        toast.success(data.message);
+      }
       navigate(`/app/builder/${data.newResume._id}`);
     } catch (error) {
       toast.error(error?.response?.data?.message || "Resume upload failed");
@@ -145,7 +153,7 @@ const Dashboard = () => {
         toast.success(data.message);
       }
     } catch (error) {
-      toast.error(error?.responsse?.data?.message || errro.message);
+      toast.error(error?.response?.data?.message || error.message);
     }
   };
 

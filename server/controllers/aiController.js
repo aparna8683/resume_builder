@@ -252,11 +252,41 @@ Rules:
 
 export const enhanceJobDescription = async (req, res) => {
   try {
-    const { userContent } = req.body;
+    const { userContent, position, company } = req.body;
+    const jobDescription = userContent?.trim();
 
-    if (!userContent) {
+    if (!jobDescription) {
       return res.status(400).json({ message: "Missing required fields" });
     }
+
+    const roleContext =
+      position && company
+        ? `Role: ${position} at ${company}\n\n`
+        : "";
+
+    const userPrompt = `You are a professional resume writer.
+
+Rewrite the provided job description into concise ATS-friendly resume bullet points.
+
+Rules:
+- Return only the improved job description.
+- Do not explain your changes.
+- Do not provide options.
+- Do not provide examples.
+- Do not use markdown.
+- Do not use headings.
+- Do not use placeholders.
+- Output only 3-5 bullet points.
+
+Input:
+${roleContext}${jobDescription}`;
+
+    console.log("enhanceJobDescription Gemini payload:", {
+      jobDescription,
+      position,
+      company,
+      userPrompt,
+    });
 
     const response = await ai.chat.completions.create({
       model: process.env.OPENAI_MODEL,
@@ -264,11 +294,11 @@ export const enhanceJobDescription = async (req, res) => {
         {
           role: "system",
           content:
-            "You are a resume expert. Improve the job description to be achievement-focused, quantified, and ATS-friendly.",
+            "You are a resume expert. Improve job descriptions into achievement-focused, quantified, ATS-friendly bullet points. Return only the rewritten bullets.",
         },
         {
           role: "user",
-          content: userContent,
+          content: userPrompt,
         },
       ],
     });
@@ -282,12 +312,23 @@ export const enhanceJobDescription = async (req, res) => {
   }
 };
 
-export const uploadResume = async (req, res) => {
-  try {
-    const { resumeText, title } = req.body;
-    const userId = req.userId;
+const createBasicResume = async (userId, title, resumeText) => {
+  return Resume.create({
+    userId,
+    title,
+    professional_summary: resumeText || "",
+  });
+};
 
-    if (!resumeText || !title) {
+export const uploadResume = async (req, res) => {
+  let resumeText;
+  let title;
+  let userId;
+  try {
+    ({ resumeText, title } = req.body);
+    userId = req.userId;
+
+    if (!title?.trim() || !resumeText?.trim()) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
@@ -376,8 +417,11 @@ ${resumeText}
 
     if (!extractedData.startsWith("{") || !extractedData.endsWith("}")) {
       console.error("Raw AI content:", extractedData);
-      return res.status(500).json({
-        message: "AI did not return valid JSON",
+      const fallbackResume = await createBasicResume(userId, title, resumeText);
+      return res.status(201).json({
+        newResume: fallbackResume,
+        message:
+          "AI extraction failed. Resume uploaded with basic content.",
       });
     }
 
@@ -387,8 +431,11 @@ ${resumeText}
     } catch (err) {
       console.error("JSON parse error:", err);
       console.error("Raw AI content:", extractedData);
-      return res.status(500).json({
-        message: "AI response parsing failed",
+      const fallbackResume = await createBasicResume(userId, title, resumeText);
+      return res.status(201).json({
+        newResume: fallbackResume,
+        message:
+          "AI extraction failed. Resume uploaded with basic content.",
       });
     }
 
@@ -402,6 +449,14 @@ ${resumeText}
   } catch (error) {
     console.error("uploadResume error:", error);
     const statusCode = error?.status || 500;
+    if (statusCode >= 500 && title && userId) {
+      const fallbackResume = await createBasicResume(userId, title, resumeText);
+      return res.status(201).json({
+        newResume: fallbackResume,
+        message:
+          "AI service temporarily unavailable. Resume uploaded with basic content.",
+      });
+    }
     const message =
       statusCode >= 500
         ? "AI service temporarily unavailable. Please try again."

@@ -35,7 +35,7 @@ const ProfessionalSummary = ({ data, onChange }) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="flex items-center gap-3 text-lg font-semibold text-gray-900">
             Professional Summary
@@ -49,7 +49,7 @@ const ProfessionalSummary = ({ data, onChange }) => {
           disabled={isGenerating}
           onClick={generateSummary}
           type="button"
-          className="flex items-center gap-1 rounded bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors disabled:opacity-50 text-sm px-3 py-1"
+          className="flex min-h-9 items-center gap-1 rounded bg-purple-100 px-3 py-1.5 text-sm font-medium text-purple-700 transition-colors hover:bg-purple-200 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isGenerating ? (
             <Loader2 className="size-4 animate-spin" />

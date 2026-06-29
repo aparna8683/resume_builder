@@ -21,7 +21,7 @@ const Projects = ({ data, onChange }) => {
   };
   return (
     <div className="space-y-6 mt-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">
             Project Details
@@ -32,7 +32,7 @@ const Projects = ({ data, onChange }) => {
         <button
           type="button"
           onClick={addProject}
-          className="flex items-center gap-2 px-3 py-1 text-sm bg-green-100 text-green-500 rounded-lg hover:bg-green-200 transition-colors"
+          className="flex min-h-9 items-center gap-2 rounded-lg bg-green-100 px-3 py-1.5 text-sm font-medium text-green-700 transition-colors hover:bg-green-200"
         >
           <Plus className="size-4" />
           Add Project
@@ -58,6 +58,7 @@ const Projects = ({ data, onChange }) => {
                   type="button"
                   onClick={() => removeProject(index)}
                   className="text-red-500 hover:text-red-700 transition-colors"
+                  aria-label={`Remove project ${index + 1}`}
                 >
                   <Trash2 className="size-4" />
                 </button>

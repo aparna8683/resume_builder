@@ -131,7 +131,7 @@ export const updateResume = async (req, res) => {
 
     let resumeDataCopy ;
     if( typeof resumeData==='string' )
-      resumeDataCopy= await JSON.parse(JSON.stringify(resumeData));
+      resumeDataCopy= JSON.parse(resumeData);
     else{
       resumeDataCopy= structuredClone(resumeData)
     }

@@ -17,15 +17,39 @@ const ResumePreview = ({ data, template, accentColor, classes = "" }) => {
     }
   };
   return (
-    <div className="w-full bg-gray-100">
+    <div className="w-full overflow-x-auto bg-gray-100">
       <div
         id="resume-preview"
-        className={`border border-gray-200 print:shadow-none print:border-none ${classes}`}
+        className={`mx-auto min-w-[320px] border border-gray-200 bg-white [overflow-wrap:anywhere] print:shadow-none print:border-none ${classes}`}
       >
         {renderTemplate()}
       </div>
-      <style jsx>
+      <style>
         {`
+          .resume-pdf-export-container {
+            position: fixed;
+            left: -10000px;
+            top: 0;
+            width: 210mm;
+            background: #ffffff;
+            z-index: -1;
+          }
+          .resume-pdf-export {
+            width: 210mm !important;
+            min-width: 210mm !important;
+            max-width: 210mm !important;
+            border: none !important;
+            box-shadow: none !important;
+            background: #ffffff !important;
+          }
+          .resume-pdf-export section,
+          .resume-pdf-export header {
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+          .resume-pdf-export img {
+            max-width: 100%;
+          }
           @page {
             size: letter;
             margin: 0;
@@ -35,20 +59,19 @@ const ResumePreview = ({ data, template, accentColor, classes = "" }) => {
             body {
               width: 8.5in;
               height: 11in;
-              overflow: hidden;
             }
-            body* {
+            body * {
               visibility: hidden;
             }
             #resume-preview,
-            #resume-preview* {
+            #resume-preview * {
               visibility: visible;
             }
             #resume-preview {
               position: absolute;
               left: 0;
               top: 0;
-              width: 100%;
+              width: 8.5in;
               height: auto;
               margin: 0;
               padding: 0;

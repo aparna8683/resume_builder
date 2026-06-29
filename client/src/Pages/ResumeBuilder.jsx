@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { dummyResumeData } from "../assets/assets";
 import api from "../configs/api";
 
 import {
@@ -14,6 +13,7 @@ import {
   FileText,
   FolderIcon,
   GraduationCap,
+  Loader2,
   Share2,
   Sparkles,
   User,
@@ -60,6 +60,8 @@ const ResumeBuilder = () => {
 
   const [activeSectionIndex, setActiveIndex] = useState(0);
   const [removeBackground, setRemoveBackground] = useState(false);
+  const [isChangingVisibility, setIsChangingVisibility] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const activeSection = sections[activeSectionIndex];
 
@@ -90,42 +92,147 @@ const ResumeBuilder = () => {
   // }, [resumeId]);
 
   const changeResumeVisibility = async () => {
+    if (!resumeId || isChangingVisibility) return;
+
+    const nextPublicState = !resumeData.public;
+
     try {
+      setIsChangingVisibility(true);
       const formData = new FormData();
       formData.append("resumeId", resumeId);
       formData.append(
         "resumeData",
-        JSON.stringify({ public: !resumeData.public }),
+        JSON.stringify({ public: nextPublicState }),
       );
       const { data } = await api.put("/api/resume/update", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      setResumeData((prev) => ({
-        ...prev,
-        public: !prev.public,
-      }));
+      setResumeData(
+        (prev) => data.resume || { ...prev, public: nextPublicState },
+      );
       toast.success(data.message);
     } catch (error) {
-      console.error();
-      toast.error(error.message);
+      console.error(error);
+      toast.error(error?.response?.data?.message || error.message);
+    } finally {
+      setIsChangingVisibility(false);
     }
   };
 
-  const handleShare = () => {
-    const frontendURL = window.location.href.split("/app/")[0];
-    const resumeURL = frontendURL + "/view/" + resumeId;
+  const handleShare = async () => {
+    if (!resumeId) return;
 
-    if (navigator.share) {
-      navigator.share({ url: resumeURL, text: "My Resume" });
-    } else {
-      alert("Share not supported on this browser.");
+    const resumeURL = `${window.location.origin}/view/${resumeId}`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: resumeData.title || "My Resume",
+          text: "My Resume",
+          url: resumeURL,
+        });
+        return;
+      }
+
+      await navigator.clipboard.writeText(resumeURL);
+      toast.success("Resume link copied");
+    } catch (shareError) {
+      if (shareError?.name !== "AbortError") {
+        toast.error("Unable to share resume");
+      }
     }
   };
 
-  const DownloadResume = () => {
-    window.print();
+  const getResumeFileName = () => {
+    const fullName = resumeData.personal_info?.full_name?.trim();
+    const nameParts = fullName ? fullName.split(/\s+/) : [];
+    const firstName = nameParts[0] || "Resume";
+    const lastName =
+      nameParts.length > 1 ? nameParts[nameParts.length - 1] : "Builder";
+
+    return `${firstName}_${lastName}_Resume.pdf`.replace(/[\\/:*?"<>|]+/g, "");
+  };
+
+  const waitForPreviewImages = async (element) => {
+    const images = Array.from(element.querySelectorAll("img"));
+
+    await Promise.all(
+      images.map(
+        (image) =>
+          new Promise((resolve) => {
+            if (image.complete) {
+              resolve();
+              return;
+            }
+
+            image.onload = resolve;
+            image.onerror = resolve;
+          }),
+      ),
+    );
+  };
+
+  const DownloadResume = async () => {
+    if (isDownloading) return;
+
+    const resumeElement = document.getElementById("resume-preview");
+    if (!resumeElement) {
+      toast.error("Resume preview is not ready");
+      return;
+    }
+
+    let container;
+
+    try {
+      setIsDownloading(true);
+      await document.fonts?.ready;
+      await waitForPreviewImages(resumeElement);
+
+      const { default: html2pdf } = await import("html2pdf.js");
+      const exportElement = resumeElement.cloneNode(true);
+      exportElement.classList.add("resume-pdf-export");
+
+      container = document.createElement("div");
+      container.className = "resume-pdf-export-container";
+      container.appendChild(exportElement);
+      document.body.appendChild(container);
+
+      const options = {
+        margin: 0,
+        filename: getResumeFileName(),
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: {
+          scale: Math.min(3, window.devicePixelRatio || 2),
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: "#ffffff",
+          logging: false,
+        },
+        jsPDF: {
+          unit: "mm",
+          format: "a4",
+          orientation: "portrait",
+          compress: true,
+        },
+        pagebreak: {
+          mode: ["css", "legacy"],
+          avoid: ["section", "header", ".avoid-page-break"],
+        },
+      };
+
+      await html2pdf().set(options).from(exportElement).save();
+      toast.success("Resume downloaded");
+    } catch (error) {
+      console.error(error);
+      toast.error("Unable to download resume");
+    } finally {
+      if (container?.parentNode) {
+        container.parentNode.removeChild(container);
+      }
+      setIsDownloading(false);
+    }
   };
   const saveResume = async () => {
     try {
@@ -147,7 +254,8 @@ const ResumeBuilder = () => {
       setResumeData(data.resume);
       toast.success(data.message);
     } catch (error) {
-      console.error();
+      console.error(error);
+      toast.error(error?.response?.data?.message || error.message);
     }
   };
 
@@ -168,7 +276,7 @@ const ResumeBuilder = () => {
         <div className="grid lg:grid-cols-12 gap-8">
           {/* Left Panel */}
           <div className="relative lg:col-span-5 rounded-lg overflow-hidden">
-            <div className="bg-white rounded-lg shadow-sm border-gray-200 p-6 pt-1">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 pt-1 sm:p-6 sm:pt-1">
               {/* Progress Bar */}
               <hr className="absolute top-0 left-0 right-0 border-2 border-gray-200" />
               <hr
@@ -181,7 +289,7 @@ const ResumeBuilder = () => {
               />
 
               {/* Navigation */}
-              <div className="flex justify-between items-center mb-6 border-b border-gray-300 py-1">
+              <div className="flex flex-wrap justify-between items-center gap-3 mb-6 border-b border-gray-300 py-2">
                 <div className="flex items-center gap-2">
                   <TemplateSelector
                     selectedTemplate={resumeData.template}
@@ -201,13 +309,14 @@ const ResumeBuilder = () => {
                   />
                 </div>
 
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2 sm:gap-4">
                   {activeSectionIndex !== 0 && (
                     <button
+                      type="button"
                       onClick={() =>
                         setActiveIndex((prev) => Math.max(prev - 1, 0))
                       }
-                      className="flex items-center gap-1 py-3 text-sm text-gray-600"
+                      className="flex min-h-10 items-center gap-1 rounded-md px-2 py-2 text-sm text-gray-600 hover:bg-gray-100"
                     >
                       <ChevronLeft className="size-4" />
                       Previous
@@ -215,13 +324,14 @@ const ResumeBuilder = () => {
                   )}
 
                   <button
+                    type="button"
                     onClick={() =>
                       setActiveIndex((prev) =>
                         Math.min(prev + 1, sections.length - 1),
                       )
                     }
                     disabled={activeSectionIndex === sections.length - 1}
-                    className="flex items-center gap-1 p-3 text-sm text-gray-600"
+                    className="flex min-h-10 items-center gap-1 rounded-md px-2 py-2 text-sm text-gray-600 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Next
                     <ChevronRight className="size-4" />
@@ -307,10 +417,11 @@ const ResumeBuilder = () => {
               </div>
 
               <button
+                type="button"
                 onClick={() => {
-                  toast.promise(saveResume, { loading: "Saving..." });
+                  toast.promise(saveResume(), { loading: "Saving..." });
                 }}
-                className="mt-6 px-6 py-2 text-sm bg-green-100 text-green-600 rounded-md"
+                className="mt-6 w-full rounded-md bg-green-100 px-6 py-2.5 text-sm font-medium text-green-700 hover:bg-green-200 sm:w-auto"
               >
                 Save Changes
               </button>
@@ -318,12 +429,14 @@ const ResumeBuilder = () => {
           </div>
 
           {/* Right Panel */}
-          <div className="lg:col-span-7 max-lg:mt-6 relative">
-            <div className="absolute top-2  right-0 flex gap-4 z-10">
+          <div className="relative lg:col-span-7 max-lg:mt-6">
+            <div className="mb-3 flex flex-wrap justify-end gap-2 sm:gap-3 print:hidden">
               {resumeData.public && (
                 <button
+                  type="button"
                   onClick={handleShare}
-                  className="flex items-center gap-1 px-4 py-2 text-xs bg-blue-100 text-blue-600 rounded-lg"
+                  className="flex min-h-10 items-center gap-1 rounded-lg bg-blue-100 px-4 py-2 text-xs font-medium text-blue-700 hover:bg-blue-200"
+                  aria-label="Share public resume"
                 >
                   <Share2 className="size-4" />
                   Share
@@ -331,8 +444,11 @@ const ResumeBuilder = () => {
               )}
 
               <button
+                type="button"
                 onClick={changeResumeVisibility}
-                className="flex items-center gap-1 px-4 py-2 text-xs bg-purple-100 text-purple-600 rounded-lg"
+                disabled={isChangingVisibility}
+                aria-pressed={resumeData.public}
+                className="flex min-h-10 items-center gap-1 rounded-lg bg-purple-100 px-4 py-2 text-xs font-medium text-purple-700 hover:bg-purple-200 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {resumeData.public ? (
                   <EyeIcon className="size-4" />
@@ -343,11 +459,18 @@ const ResumeBuilder = () => {
               </button>
 
               <button
+                type="button"
                 onClick={DownloadResume}
-                className="flex items-center gap-1 px-4 py-2 text-xs bg-green-100 text-green-600 rounded-lg"
+                disabled={isDownloading}
+                className="flex min-h-10 items-center gap-1 rounded-lg bg-green-100 px-4 py-2 text-xs font-medium text-green-700 hover:bg-green-200 disabled:cursor-not-allowed disabled:opacity-60"
+                aria-label="Download resume"
               >
-                <DownloadIcon className="size-4" />
-                Download
+                {isDownloading ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <DownloadIcon className="size-4" />
+                )}
+                {isDownloading ? "Downloading" : "Download"}
               </button>
             </div>
 

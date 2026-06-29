@@ -29,8 +29,11 @@ const TemplateSelector = ({ selectedTemplate, onChange }) => {
   return (
     <div className="relative">
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-1 text-sm text-blue-600 bg-gradient-to-br from-blue-50 to-blue-100 ring-blue-300 hover:ring transition-all px-3 py-2 rounded-lg"
+        aria-expanded={isOpen}
+        aria-label="Select resume template"
       >
         <Layout size={14} />
         <span className="max-sm:hidden">Template</span>
@@ -38,13 +41,14 @@ const TemplateSelector = ({ selectedTemplate, onChange }) => {
       {isOpen && (
         <div className="absolute mt-2 w-64 bg-white shadow-lg border rounded-lg p-2 space-y-2 z-50">
           {templates.map((template) => (
-            <div
+            <button
+              type="button"
               key={template.id}
               onClick={() => {
                 onChange(template.id);
                 setIsOpen(false);
               }}
-              className={`relative p-3 border rounded-md cursor-pointer transition-all ${
+              className={`relative w-full p-3 text-left border rounded-md cursor-pointer transition-all ${
                 selectedTemplate === template.id
                   ? "border-blue-400 bg-blue-100"
                   : "border-gray-300 hover:border-gray-400 hover:bg-gray-100"
@@ -63,7 +67,7 @@ const TemplateSelector = ({ selectedTemplate, onChange }) => {
                   {template.preview}
                 </div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       )}

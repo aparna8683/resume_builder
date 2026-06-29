@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { dummyResumeData } from "../assets/assets";
+import api from "../configs/api";
 import ResumePreview from "../Components/ResumePreview";
 import Loader from "../Components/Loader";
 import { ArrowLeftIcon } from "lucide-react";
@@ -12,7 +12,7 @@ const Preview = () => {
   const [resumeData, setResumeData] = useState(null);
   const loadResume = async () => {
     try {
-      const { data } = await Api.get("/api/resume/public/" + resumeId);
+      const { data } = await api.get("/api/resume/public/" + resumeId);
       setResumeData(data.resume);
     } catch (error) {
       console.log(error.message);
@@ -21,7 +21,7 @@ const Preview = () => {
     }
   };
   useEffect(() => {
-    loadResume;
+    loadResume();
   }, [resumeId]);
 
   return resumeData ? (
