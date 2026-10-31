@@ -23,10 +23,10 @@ jobs:
         run: |
           cd client
           npm ci
-          npm audit fix
+          npm audit fix || true
           cd ../server
           npm ci
-          npm audit fix
+          npm audit fix || true
       - name: Commit updated dependency manifests and lockfiles
         run: |
           git config user.name "github-actions[bot]"
