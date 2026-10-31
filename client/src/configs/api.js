@@ -1,32 +1,23 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_BASE_URL || "http://localhost:5000",
+  baseURL: (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, ""),
+  timeout: 30000,
 });
 
-// Automatically inject Authorization header if token exists
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = token.startsWith("Bearer ")
-        ? token
-        : `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) config.headers.Authorization = `Bearer ${token.replace(/^Bearer\s+/i, "")}`;
+  return config;
+});
 
-// Intercept 401 Unauthorized responses to clean stale tokens
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Stale or invalid token
-      const currentToken = localStorage.getItem("token");
-      if (currentToken) {
-        localStorage.removeItem("token");
+      localStorage.removeItem("token");
+      if (window.location.pathname.startsWith("/app")) {
+        window.location.assign("/login");
       }
     }
     return Promise.reject(error);

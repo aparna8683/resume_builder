@@ -3,130 +3,128 @@ import mongoose from "mongoose";
 import Resume from "../Models/resume.js";
 import imagekit from "../configs/imageKit.js";
 
-// Helper to convert local file to base64 Data URI fallback
 const fileToBase64DataUri = (filePath, mimetype) => {
   const fileData = fs.readFileSync(filePath);
-  const base64 = fileData.toString("base64");
-  return `data:${mimetype || "image/png"};base64,${base64}`;
+  return `data:${mimetype || "image/png"};base64,${fileData.toString("base64")}`;
+};
+
+const fieldSets = {
+  personal_info: new Set(["image", "full_name", "profession", "email", "phone", "location", "linkedin", "website"]),
+  experience: new Set(["company", "position", "start_date", "end_date", "description", "is_current"]),
+  project: new Set(["name", "type", "description"]),
+  education: new Set(["institution", "degree", "field", "gpa", "graduation_date"]),
+};
+
+const sanitizeObject = (value, allowedFields, label) => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`${label} must be an object.`);
+  }
+  const result = {};
+  for (const [key, fieldValue] of Object.entries(value)) {
+    if (allowedFields.has(key) && !key.startsWith("$") && !key.includes(".")) {
+      result[key] = fieldValue;
+    }
+  }
+  return result;
+};
+
+export const sanitizeResumeUpdate = (input) => {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    throw new Error("Resume data must be a JSON object.");
+  }
+
+  const allowedFields = new Set([
+    "title", "public", "template", "accent_color", "professional_summary",
+    "skills", "personal_info", "experience", "project", "education",
+  ]);
+  const update = {};
+
+  for (const [key, value] of Object.entries(input)) {
+    if (!allowedFields.has(key) || key.startsWith("$") || key.includes(".")) continue;
+
+    if (key === "personal_info") {
+      update[key] = sanitizeObject(value, fieldSets.personal_info, "personal_info");
+    } else if (["experience", "project", "education"].includes(key)) {
+      if (!Array.isArray(value)) throw new Error(`${key} must be an array.`);
+      update[key] = value.map((item, index) =>
+        sanitizeObject(item, fieldSets[key], `${key}[${index}]`)
+      );
+    } else if (key === "skills") {
+      if (!Array.isArray(value) || value.some((skill) => typeof skill !== "string")) {
+        throw new Error("skills must be an array of strings.");
+      }
+      update[key] = value.map((skill) => skill.trim()).filter(Boolean);
+    } else {
+      update[key] = value;
+    }
+  }
+
+  if (Object.keys(update).length === 0) {
+    throw new Error("No supported resume fields were provided.");
+  }
+  return update;
 };
 
 // Create Resume
 export const createResume = async (req, res) => {
   try {
-    const userId = req.userId;
-    const { title } = req.body;
-
-    const newResume = await Resume.create({
-      userId,
-      title: title?.trim() || "Untitled Resume",
-    });
-
-    return res.status(201).json({
-      message: "Resume created successfully",
-      resume: newResume,
-    });
+    const title = typeof req.body?.title === "string" ? req.body.title.trim() : "";
+    const resume = await Resume.create({ userId: req.userId, title: title || "Untitled Resume" });
+    return res.status(201).json({ message: "Resume created successfully", resume });
   } catch (error) {
     console.error("createResume error:", error);
-    return res.status(500).json({
-      message: error.message || "Resume creation failed",
-    });
+    return res.status(500).json({ message: "Resume creation failed" });
   }
 };
 
 // Duplicate Resume
 export const duplicateResume = async (req, res) => {
   try {
-    const userId = req.userId;
     const { resumeId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(resumeId)) return res.status(400).json({ message: "Invalid resume ID" });
+    const existing = await Resume.findOne({ userId: req.userId, _id: resumeId });
+    if (!existing) return res.status(404).json({ message: "Resume not found" });
 
-    if (!mongoose.Types.ObjectId.isValid(resumeId)) {
-      return res.status(400).json({ message: "Invalid resume ID" });
-    }
-
-    const existingResume = await Resume.findOne({ userId, _id: resumeId });
-    if (!existingResume) {
-      return res.status(404).json({ message: "Resume not found" });
-    }
-
-    const resumeObj = existingResume.toObject();
-    delete resumeObj._id;
-    delete resumeObj.createdAt;
-    delete resumeObj.updatedAt;
-    resumeObj.title = `${existingResume.title} (Copy)`;
-
-    const duplicatedResume = await Resume.create(resumeObj);
-
-    return res.status(201).json({
-      message: "Resume duplicated successfully",
-      resume: duplicatedResume,
-    });
+    const copy = existing.toObject();
+    delete copy._id;
+    delete copy.createdAt;
+    delete copy.updatedAt;
+    delete copy.__v;
+    copy.title = `${existing.title} (Copy)`;
+    copy.public = false;
+    const resume = await Resume.create(copy);
+    return res.status(201).json({ message: "Resume duplicated successfully", resume });
   } catch (error) {
     console.error("duplicateResume error:", error);
-    return res.status(500).json({
-      message: error.message || "Failed to duplicate resume",
-    });
+    return res.status(500).json({ message: "Failed to duplicate resume" });
   }
 };
 
 // Delete Resume
 export const deleteResume = async (req, res) => {
   try {
-    const userId = req.userId;
     const { resumeId } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(resumeId)) {
-      return res.status(400).json({ message: "Invalid resume ID" });
-    }
-
-    const deleted = await Resume.findOneAndDelete({
-      userId,
-      _id: resumeId,
-    });
-
-    if (!deleted) {
-      return res.status(404).json({
-        message: "Resume not found",
-      });
-    }
-
-    return res.status(200).json({
-      message: "Resume deleted successfully",
-    });
+    if (!mongoose.Types.ObjectId.isValid(resumeId)) return res.status(400).json({ message: "Invalid resume ID" });
+    const deleted = await Resume.findOneAndDelete({ userId: req.userId, _id: resumeId });
+    if (!deleted) return res.status(404).json({ message: "Resume not found" });
+    return res.status(200).json({ message: "Resume deleted successfully" });
   } catch (error) {
     console.error("deleteResume error:", error);
-    return res.status(500).json({
-      message: error.message || "Resume deletion failed",
-    });
+    return res.status(500).json({ message: "Resume deletion failed" });
   }
 };
 
 // Get Resume By ID (Private)
 export const getResumeById = async (req, res) => {
   try {
-    const userId = req.userId;
     const { resumeId } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(resumeId)) {
-      return res.status(400).json({ message: "Invalid resume ID" });
-    }
-
-    const resume = await Resume.findOne(
-      { userId, _id: resumeId },
-      { __v: 0 }
-    );
-
-    if (!resume) {
-      return res.status(404).json({
-        message: "Resume not found",
-      });
-    }
-
+    if (!mongoose.Types.ObjectId.isValid(resumeId)) return res.status(400).json({ message: "Invalid resume ID" });
+    const resume = await Resume.findOne({ userId: req.userId, _id: resumeId }).select("-__v");
+    if (!resume) return res.status(404).json({ message: "Resume not found" });
     return res.status(200).json({ resume });
   } catch (error) {
     console.error("getResumeById error:", error);
-    return res.status(500).json({
-      message: error.message || "Failed to fetch resume",
-    });
+    return res.status(500).json({ message: "Failed to fetch resume" });
   }
 };
 
@@ -134,27 +132,13 @@ export const getResumeById = async (req, res) => {
 export const getPublicResumeById = async (req, res) => {
   try {
     const { resumeId } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(resumeId)) {
-      return res.status(400).json({ message: "Invalid resume ID" });
-    }
-
-    const resume = await Resume.findOne({
-      public: true,
-      _id: resumeId,
-    });
-
-    if (!resume) {
-      return res.status(404).json({
-        message: "Resume not found or is set to private",
-      });
-    }
-
+    if (!mongoose.Types.ObjectId.isValid(resumeId)) return res.status(400).json({ message: "Invalid resume ID" });
+    const resume = await Resume.findOne({ public: true, _id: resumeId }).select("-__v -userId");
+    if (!resume) return res.status(404).json({ message: "Resume not found or is set to private" });
     return res.status(200).json({ resume });
   } catch (error) {
     console.error("getPublicResumeById error:", error);
-    return res.status(500).json({
-      message: error.message || "Failed to fetch public resume",
-    });
+    return res.status(500).json({ message: "Failed to fetch public resume" });
   }
 };
 
@@ -162,107 +146,73 @@ export const getPublicResumeById = async (req, res) => {
 export const updateResume = async (req, res) => {
   const image = req.file;
   try {
-    const userId = req.userId;
-    const { resumeId, resumeData, removeBackground } = req.body;
-
-    if (!resumeId || !mongoose.Types.ObjectId.isValid(resumeId)) {
+    const { resumeId } = req.body ?? {};
+    if (!mongoose.Types.ObjectId.isValid(resumeId)) {
       return res.status(400).json({ message: "Invalid or missing resume ID" });
     }
 
-    let resumeDataCopy = {};
-    if (typeof resumeData === "string") {
-      try {
-        resumeDataCopy = JSON.parse(resumeData);
-      } catch (e) {
-        console.error("JSON parse error for resumeData:", e);
-        resumeDataCopy = {};
-      }
-    } else if (resumeData && typeof resumeData === "object") {
-      resumeDataCopy = structuredClone(resumeData);
+    let parsedData = req.body?.resumeData;
+    if (typeof parsedData === "string") {
+      try { parsedData = JSON.parse(parsedData); }
+      catch { return res.status(400).json({ message: "resumeData contains invalid JSON." }); }
     }
 
-    // Process image upload if provided
+    let update;
+    try { update = sanitizeResumeUpdate(parsedData); }
+    catch (error) { return res.status(400).json({ message: error.message }); }
+
     if (image) {
-      let imageUrl = null;
+      let imageUrl;
       try {
-        // Attempt ImageKit upload if keys are present
         if (process.env.IMAGEKIT_PRIVATE_KEY && imagekit?.files?.upload) {
-          const imageStream = fs.createReadStream(image.path);
-          const response = await imagekit.files.upload({
-            file: imageStream,
-            fileName: `resume_${Date.now()}.png`,
+          const stream = fs.createReadStream(image.path);
+          const uploaded = await imagekit.files.upload({
+            file: stream,
+            fileName: image.filename || `resume_${Date.now()}`,
             folder: "user-resumes",
-            transformation: {
-              pre:
-                "w-300,h-300,fo-face,z-0.75" +
-                (removeBackground ? ",e-bgremove" : ""),
-            },
+            transformation: { pre: `w-300,h-300,fo-face,z-0.75${req.body?.removeBackground === "yes" ? ",e-bgremove" : ""}` },
           });
-          if (response?.url) {
-            imageUrl = response.url;
-          }
+          imageUrl = uploaded?.url;
         }
-      } catch (imgKitErr) {
-        console.warn("ImageKit upload error, falling back to data URI:", imgKitErr.message);
+      } catch (error) {
+        console.warn("ImageKit upload failed; using local data URI fallback:", error.message);
       }
 
-      // Fallback: If ImageKit fails or is not fully configured, embed as Data URI
-      if (!imageUrl && fs.existsSync(image.path)) {
-        imageUrl = fileToBase64DataUri(image.path, image.mimetype);
-      }
-
+      if (!imageUrl && fs.existsSync(image.path)) imageUrl = fileToBase64DataUri(image.path, image.mimetype);
       if (imageUrl) {
-        if (!resumeDataCopy.personal_info) {
-          resumeDataCopy.personal_info = {};
-        }
-        resumeDataCopy.personal_info.image = imageUrl;
+        update.personal_info = {
+          ...(update.personal_info || {}),
+          image: imageUrl,
+        };
       }
     }
 
-    const updatedResume = await Resume.findOneAndUpdate(
-      { userId, _id: resumeId },
-      { $set: resumeDataCopy },
-      { new: true, runValidators: true }
+    const resume = await Resume.findOneAndUpdate(
+      { userId: req.userId, _id: resumeId },
+      { $set: update },
+      { new: true, runValidators: true, context: "query" }
     );
-
-    if (!updatedResume) {
-      return res.status(404).json({
-        message: "Resume not found",
-      });
-    }
-
-    return res.status(200).json({
-      message: "Saved successfully",
-      resume: updatedResume,
-    });
+    if (!resume) return res.status(404).json({ message: "Resume not found" });
+    return res.status(200).json({ message: "Saved successfully", resume });
   } catch (error) {
     console.error("updateResume error:", error);
-    return res.status(500).json({
-      message: error.message || "Resume update failed",
-    });
+    if (error.name === "ValidationError" || error.name === "CastError") {
+      return res.status(400).json({ message: error.message });
+    }
+    return res.status(500).json({ message: "Resume update failed" });
   } finally {
-    // Always clean up temp uploaded file
     if (image?.path && fs.existsSync(image.path)) {
-      try {
-        fs.unlinkSync(image.path);
-      } catch (err) {
-        console.error("Error deleting temp file:", err);
-      }
+      try { fs.unlinkSync(image.path); } catch (error) { console.error("Temp upload cleanup failed:", error.message); }
     }
   }
 };
 
 export const getAllResumes = async (req, res) => {
   try {
-    const userId = req.userId;
-    const resumes = await Resume.find({ userId }, { __v: 0 }).sort({
-      updatedAt: -1,
-    });
+    const resumes = await Resume.find({ userId: req.userId }).select("-__v").sort({ updatedAt: -1 });
     return res.status(200).json({ resumes });
   } catch (error) {
     console.error("getAllResumes error:", error);
-    return res.status(500).json({
-      message: error.message || "Failed to fetch resumes",
-    });
+    return res.status(500).json({ message: "Failed to fetch resumes" });
   }
 };

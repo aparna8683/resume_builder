@@ -1,4 +1,6 @@
 .env
 node_modules/
-dist
-build
+dist/
+build/
+uploads/
+coverage/

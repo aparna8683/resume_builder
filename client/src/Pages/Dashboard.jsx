@@ -95,6 +95,10 @@ const Dashboard = () => {
       toast.error("Please select a PDF file");
       return;
     }
+    if (pdfFile.type !== "application/pdf" || pdfFile.size > 10 * 1024 * 1024) {
+      toast.error("Choose a PDF smaller than 10 MB.");
+      return;
+    }
     if (!title.trim()) {
       toast.error("Please provide a title for this resume");
       return;
@@ -110,12 +114,12 @@ const Dashboard = () => {
         return;
       }
 
-      const formData = new FormData();
-      formData.append("title", title.trim());
-      formData.append("resumeText", resumeText);
-      formData.append("resume", pdfFile);
-
-      const { data } = await api.post("/api/ai/upload-resume", formData);
+      // The browser already extracts PDF text. Send the text payload only;
+      // the server does not need a second copy of the PDF file.
+      const { data } = await api.post("/api/ai/upload-resume", {
+        title: title.trim(),
+        resumeText,
+      });
 
       toast.success(data?.message || "Resume extracted and imported!");
       setShowUploadModal(false);

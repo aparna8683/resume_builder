@@ -1,21 +1,22 @@
 import jwt from "jsonwebtoken";
-const protect=async (req,res, next)=>{
-    const authHeaders= req.headers.authorization;
-    if(!authHeaders){
-        return res.status(401).json({message:"Unauthorized"
-        })
-    } 
 
-    try{ 
-        const token = authHeaders.startsWith("Bearer ")
-        ? authHeaders.split(" ")[1]:
-        authHeaders;
-        const decoded= jwt.verify(token, process.env.JWT_SECRET) ;
-        req.userId=decoded.userId
-        next();        
-    } catch(error){
-        return res.status(401).json({message:"Unauthorized"})
+const protect = (req, res, next) => {
+  const authorization = req.headers.authorization;
+  if (!authorization?.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Authentication required" });
+  }
+  const token = authorization.slice(7).trim();
+  if (!token || !process.env.JWT_SECRET) {
+    return res.status(401).json({ message: "Invalid or expired session" });
+  }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!decoded?.userId) return res.status(401).json({ message: "Invalid session token" });
+    req.userId = decoded.userId;
+    return next();
+  } catch {
+    return res.status(401).json({ message: "Invalid or expired session" });
+  }
+};
 
-    }
-}
 export default protect;

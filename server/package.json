@@ -1,17 +1,17 @@
 {
   "name": "server",
   "version": "1.0.0",
+  "private": true,
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "server": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "test": "node --test"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@imagekit/nodejs": "^7.1.1",
     "@imagekit/react": "^5.0.1",
