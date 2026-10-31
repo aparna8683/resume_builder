@@ -1,9 +1,20 @@
 import OpenAI from "openai";
 
-const ai = new OpenAI({
-    apiKey: process.env.GEMINI_API_KEY,
-    baseURL:process.env.OPENAI_BASE_URL,
-});
+const apiKey = process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY;
+const baseURL = process.env.OPENAI_BASE_URL || undefined;
 
+// Delay the missing-credential failure until an AI endpoint is actually used.
+// This keeps non-AI resume CRUD available when optional AI features are not configured.
+const ai = apiKey
+  ? new OpenAI({ apiKey, ...(baseURL ? { baseURL } : {}) })
+  : {
+      chat: {
+        completions: {
+          create: async () => {
+            throw new Error("AI provider is not configured. Set GEMINI_API_KEY (and OPENAI_BASE_URL when required).");
+          },
+        },
+      },
+    };
 
-export default ai
+export default ai;
