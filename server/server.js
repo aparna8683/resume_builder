@@ -8,7 +8,6 @@ import aiRouter from "./routes/aiRouter.js";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
-
 const allowedOrigins = (process.env.CLIENT_URL || "")
   .split(",")
   .map((origin) => origin.trim())
@@ -16,9 +15,15 @@ const allowedOrigins = (process.env.CLIENT_URL || "")
 
 app.use(cors({
   origin(origin, callback) {
-    if (!origin || (process.env.NODE_ENV !== "production" && allowedOrigins.length === 0) || allowedOrigins.includes(origin)) {
+    // Permit local development when no allowlist is configured; production must configure one.
+    if (
+      !origin ||
+      (process.env.NODE_ENV !== "production" && allowedOrigins.length === 0) ||
+      allowedOrigins.includes(origin)
+    ) {
       return callback(null, true);
     }
+
     const error = new Error("Origin is not allowed by CORS. Configure CLIENT_URL with your frontend origin.");
     error.status = 403;
     return callback(error);
@@ -40,8 +45,10 @@ app.use("/api/users", userRouter);
 app.use("/api/resume", resumeRouter);
 app.use("/api/ai", aiRouter);
 
-app.use((err, _req, res, _next) => {
+app.use((err, _req, res, next) => {
   console.error("Request error:", err);
+  if (res.headersSent) return next(err);
+
   const status = err.status || (err.name === "MulterError" ? 400 : 500);
   return res.status(status).json({
     message: status >= 500 ? "Internal server error" : err.message,
@@ -55,8 +62,11 @@ export const startServer = async () => {
   if (process.env.NODE_ENV === "production" && allowedOrigins.length === 0) {
     throw new Error("CLIENT_URL must be configured in production.");
   }
+
   await connectDB();
-  return app.listen(PORT, () => console.log(`Resume Builder API listening on port ${PORT}`));
+  return app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Resume Builder API listening on port ${PORT}`);
+  });
 };
 
 if (process.env.NODE_ENV !== "test") {
