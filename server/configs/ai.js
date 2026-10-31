@@ -3,8 +3,6 @@ import OpenAI from "openai";
 const apiKey = process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY;
 const baseURL = process.env.OPENAI_BASE_URL || undefined;
 
-// Delay the missing-credential failure until an AI endpoint is actually used.
-// This keeps non-AI resume CRUD available when optional AI features are not configured.
 const ai = apiKey
   ? new OpenAI({ apiKey, ...(baseURL ? { baseURL } : {}) })
   : {
