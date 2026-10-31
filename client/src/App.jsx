@@ -67,6 +67,7 @@ const App = () => {
           <Route index element={<Dashboard />} />
           <Route path="builder/:resumeId" element={<ResumeBuilder />} />
         </Route>
+        <Route path="/register" element={user ? <Navigate to="/app" replace /> : <Login />}/>
         <Route path="/view/:resumeId" element={<Preview />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
