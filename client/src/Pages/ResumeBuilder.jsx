@@ -35,6 +35,7 @@ const ResumeBuilder = () => {
   const [removeBackground, setRemoveBackground] = useState(false);
   const resumeDataRef = useRef(resumeData);
   const saveInFlightRef = useRef(false);
+  const saveQueuedRef = useRef(false);
 
   useEffect(() => { resumeDataRef.current = resumeData; }, [resumeData]);
 
@@ -71,35 +72,45 @@ const ResumeBuilder = () => {
   useEffect(() => { loadExistingResume(); }, [loadExistingResume]);
 
   const saveResume = useCallback(async (silent = false) => {
-    if (!resumeId || saveInFlightRef.current) return;
-    const snapshot = resumeDataRef.current;
+    if (!resumeId) return;
+    if (saveInFlightRef.current) {
+      saveQueuedRef.current = true;
+      return;
+    }
+
+    saveInFlightRef.current = true;
+    setIsSaving(true);
     try {
-      saveInFlightRef.current = true;
-      setIsSaving(true);
-      const updated = structuredClone(snapshot);
-      const imageValue = snapshot.personal_info?.image;
-      const isFileImage = typeof File !== "undefined" && imageValue instanceof File;
+      do {
+        saveQueuedRef.current = false;
+        const snapshot = resumeDataRef.current;
+        const updated = structuredClone(snapshot);
+        const imageValue = snapshot.personal_info?.image;
+        const isFileImage = typeof File !== "undefined" && imageValue instanceof File;
 
-      if (isFileImage) {
-        updated.personal_info = { ...updated.personal_info };
-        delete updated.personal_info.image;
-      }
-
-      const formData = new FormData();
-      formData.append("resumeId", resumeId);
-      formData.append("resumeData", JSON.stringify(updated));
-      if (removeBackground) formData.append("removeBackground", "yes");
-      if (isFileImage) formData.append("image", imageValue);
-
-      const { data } = await api.put("/api/resume/update", formData);
-      if (data?.resume) {
-        // Do not replace edits made while the request was in flight.
-        if (resumeDataRef.current === snapshot) {
-          resumeDataRef.current = data.resume;
-          setResumeData(data.resume);
+        if (isFileImage) {
+          updated.personal_info = { ...updated.personal_info };
+          delete updated.personal_info.image;
         }
-      }
-      if (!silent) toast.success(data?.message || "Saved successfully!");
+
+        const formData = new FormData();
+        formData.append("resumeId", resumeId);
+        formData.append("resumeData", JSON.stringify(updated));
+        if (removeBackground) formData.append("removeBackground", "yes");
+        if (isFileImage) formData.append("image", imageValue);
+
+        const { data } = await api.put("/api/resume/update", formData);
+        if (data?.resume) {
+          if (resumeDataRef.current === snapshot) {
+            resumeDataRef.current = data.resume;
+            setResumeData(data.resume);
+          } else {
+            // An edit landed while this request was saving. Persist the newer snapshot too.
+            saveQueuedRef.current = true;
+          }
+        }
+        if (!silent) toast.success(data?.message || "Saved successfully!");
+      } while (saveQueuedRef.current);
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to save changes");
     } finally {
