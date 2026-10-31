@@ -1,7 +1,7 @@
-import React from "react";
-import { Lock, Mail, User2Icon, Eye, EyeOff } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Lock, Mail, User2, Eye, EyeOff, Sparkles, ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useDispatch } from "react-redux";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import api from "../configs/api";
 import { login } from "../app/features/authslice";
 import toast from "react-hot-toast";
@@ -12,23 +12,25 @@ const Login = () => {
   const [searchParams] = useSearchParams();
 
   const urlState = searchParams.get("state");
-  const [state, setState] = React.useState(urlState || "login");
+  const [state, setState] = useState(urlState === "register" ? "register" : "login");
 
-  const [data, setData] = React.useState({
+  const [data, setData] = useState({
     name: "",
     email: "",
     password: "",
   });
 
-  const [rememberEmail, setRememberEmail] = React.useState(false);
-  const [showPassword, setShowPassword] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
+  const [rememberEmail, setRememberEmail] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  React.useEffect(() => {
-    setState(urlState || "login");
+  useEffect(() => {
+    if (urlState === "register" || urlState === "login") {
+      setState(urlState);
+    }
   }, [urlState]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const savedEmail = localStorage.getItem("rememberEmail");
     if (savedEmail) {
       setData((prev) => ({ ...prev, email: savedEmail }));
@@ -43,19 +45,20 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!data.email.trim() || !data.password.trim()) {
+    if (!data.email.trim() || !data.password) {
       toast.error("Email and password are required");
       return;
     }
 
     if (state === "register" && !data.name.trim()) {
-      toast.error("Full name is required");
+      toast.error("Please enter your full name");
       return;
     }
 
     try {
       setLoading(true);
 
+      const endpoint = state === "login" ? "/api/users/login" : "/api/users/register";
       const payload =
         state === "login"
           ? {
@@ -68,13 +71,16 @@ const Login = () => {
               password: data.password,
             };
 
-      const response = await api.post(`/api/users/${state}`, payload);
-
-      dispatch(login(response.data));
+      const response = await api.post(endpoint, payload);
 
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
       }
+
+      dispatch(login({
+        token: response.data.token,
+        user: response.data.user
+      }));
 
       if (rememberEmail) {
         localStorage.setItem("rememberEmail", data.email.trim());
@@ -82,141 +88,194 @@ const Login = () => {
         localStorage.removeItem("rememberEmail");
       }
 
-      toast.success(response.data.message || "Success");
+      toast.success(response.data.message || (state === "login" ? "Welcome back!" : "Account created!"));
       navigate("/app");
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Something went wrong");
+      const msg = error?.response?.data?.message || "Authentication failed. Please try again.";
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
   };
 
-  const toggleState = () => {
-    const newState = state === "login" ? "register" : "login";
-    setState(newState);
-    navigate(`?state=${newState}`);
-
-    setData((prev) => ({
-      ...prev,
-      name: "",
-      password: "",
-    }));
+  const toggleState = (targetState) => {
+    setState(targetState);
+    navigate(`/app?state=${targetState}`, { replace: true });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full sm:w-[400px] bg-white/90 backdrop-blur border border-indigo-100 rounded-3xl px-8 py-10 shadow-2xl"
-      >
-        <div className="text-center">
-          <h1 className="text-zinc-900 text-3xl font-bold">
-            {state === "login" ? "Welcome Back" : "Create Account"}
-          </h1>
+    <div className="min-h-screen flex items-center justify-center bg-radial from-indigo-50/70 via-slate-50 to-white px-4 py-12 relative overflow-hidden">
+      {/* Decorative background glows */}
+      <div className="absolute -top-32 -left-32 w-96 h-96 bg-indigo-200/50 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-purple-200/40 rounded-full blur-3xl pointer-events-none" />
 
-          <p className="text-zinc-500 text-sm mt-2 mb-8">
-            {state === "login"
-              ? "Login to continue building your resume"
-              : "Start building your professional resume"}
-          </p>
-        </div>
-
-        {state === "register" && (
-          <div className="flex items-center w-full mb-4 bg-zinc-50 border border-zinc-200 h-12 rounded-xl px-4 gap-3 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100 transition">
-            <User2Icon size={18} className="text-zinc-400" />
-            <input
-              type="text"
-              placeholder="Full Name"
-              name="name"
-              value={data.name}
-              onChange={onChangeHandler}
-              required
-              className="bg-transparent outline-none border-none focus:outline-none focus:ring-0 text-sm w-full"
-            />
-          </div>
-        )}
-
-        <div className="flex items-center w-full mb-4 bg-zinc-50 border border-zinc-200 h-12 rounded-xl px-4 gap-3 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100 transition">
-          <Mail size={18} className="text-zinc-400" />
-          <input
-            type="email"
-            placeholder="Email Address"
-            name="email"
-            value={data.email}
-            onChange={onChangeHandler}
-            required
-            className="bg-transparent outline-none border-none outline-none focus:outline-none focus:ring-0  text-sm w-full"
-          />
-        </div>
-
-        <div className="flex items-center w-full mb-4 bg-zinc-50 border border-zinc-200 h-12 rounded-xl px-4 gap-3 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100 transition">
-          <Lock size={18} className="text-zinc-400" />
-          <input
-            type={showPassword ? "text" : "password"}
-            placeholder="Password"
-            name="password"
-            value={data.password}
-            onChange={onChangeHandler}
-            required
-            className="bg-transparent outline-none border-none outline-none focus:outline-none focus:ring-0  text-sm w-full"
-          />
-
-          <button
-            type="button"
-            onClick={() => setShowPassword((prev) => !prev)}
-            className="text-zinc-400 hover:text-indigo-600 transition"
+      <div className="w-full max-w-md relative z-10">
+        {/* Back to Home Button */}
+        <div className="mb-6">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-indigo-600 transition-colors bg-white/70 backdrop-blur px-3 py-1.5 rounded-full border border-slate-200 shadow-2xs"
           >
-            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-          </button>
+            <ArrowLeft className="size-3.5" />
+            Back to Home
+          </Link>
         </div>
 
-        {state === "login" && (
-          <div className="flex items-center justify-between mb-5">
-            <label className="flex items-center gap-2 text-sm text-zinc-500 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={rememberEmail}
-                onChange={(e) => setRememberEmail(e.target.checked)}
-                className="accent-indigo-600"
-              />
-              Remember me
-            </label>
+        {/* Card */}
+        <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-3xl p-8 sm:p-10 shadow-xl shadow-slate-200/60">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-full text-indigo-600 text-xs font-semibold mb-3">
+              <Sparkles className="size-3.5" />
+              AI Powered Resume Studio
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              {state === "login" ? "Welcome Back" : "Get Started Free"}
+            </h1>
+            <p className="text-sm text-slate-500 mt-2">
+              {state === "login"
+                ? "Enter your credentials to access your resumes"
+                : "Build an ATS-optimized professional resume in minutes"}
+            </p>
+          </div>
 
+          {/* Segmented Switcher */}
+          <div className="grid grid-cols-2 p-1 bg-slate-100 rounded-2xl mb-6">
             <button
               type="button"
-              className="text-sm text-indigo-600 hover:underline"
+              onClick={() => toggleState("login")}
+              className={`py-2 text-xs font-semibold rounded-xl transition-all ${
+                state === "login"
+                  ? "bg-white text-slate-900 shadow-xs"
+                  : "text-slate-500 hover:text-slate-900"
+              }`}
             >
-              Forgot password?
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleState("register")}
+              className={`py-2 text-xs font-semibold rounded-xl transition-all ${
+                state === "register"
+                  ? "bg-white text-slate-900 shadow-xs"
+                  : "text-slate-500 hover:text-slate-900"
+              }`}
+            >
+              Create Account
             </button>
           </div>
-        )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full h-12 rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 disabled:cursor-not-allowed transition font-medium shadow-lg shadow-indigo-200"
-        >
-          {loading
-            ? "Please wait..."
-            : state === "login"
-            ? "Login"
-            : "Create Account"}
-        </button>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {state === "register" && (
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Full Name
+                </label>
+                <div className="flex items-center w-full bg-slate-50 border border-slate-200 h-11 rounded-xl px-3.5 gap-2.5 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100 focus-within:bg-white transition">
+                  <User2 size={16} className="text-slate-400 shrink-0" />
+                  <input
+                    type="text"
+                    placeholder="e.g. Alex Smith"
+                    name="name"
+                    value={data.name}
+                    onChange={onChangeHandler}
+                    required={state === "register"}
+                    className="bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-sm w-full text-slate-800 placeholder:text-slate-400"
+                  />
+                </div>
+              </div>
+            )}
 
-        <p className="text-zinc-500 text-sm mt-6 text-center">
-          {state === "login"
-            ? "Don't have an account?"
-            : "Already have an account?"}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                Email Address
+              </label>
+              <div className="flex items-center w-full bg-slate-50 border border-slate-200 h-11 rounded-xl px-3.5 gap-2.5 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100 focus-within:bg-white transition">
+                <Mail size={16} className="text-slate-400 shrink-0" />
+                <input
+                  type="email"
+                  placeholder="alex@example.com"
+                  name="email"
+                  value={data.email}
+                  onChange={onChangeHandler}
+                  required
+                  className="bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-sm w-full text-slate-800 placeholder:text-slate-400"
+                />
+              </div>
+            </div>
 
-          <button
-            type="button"
-            onClick={toggleState}
-            className="ml-2 text-indigo-600 font-medium hover:underline"
-          >
-            {state === "login" ? "Register" : "Login"}
-          </button>
-        </p>
-      </form>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                Password
+              </label>
+              <div className="flex items-center w-full bg-slate-50 border border-slate-200 h-11 rounded-xl px-3.5 gap-2.5 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100 focus-within:bg-white transition">
+                <Lock size={16} className="text-slate-400 shrink-0" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder={state === "register" ? "At least 6 characters" : "••••••••"}
+                  name="password"
+                  value={data.password}
+                  onChange={onChangeHandler}
+                  required
+                  className="bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-sm w-full text-slate-800 placeholder:text-slate-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="text-slate-400 hover:text-slate-600 transition p-1"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            {state === "login" && (
+              <div className="flex items-center justify-between pt-1">
+                <label className="flex items-center gap-2 text-xs font-medium text-slate-600 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={rememberEmail}
+                    onChange={(e) => setRememberEmail(e.target.checked)}
+                    className="size-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300"
+                  />
+                  Remember email
+                </label>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full h-11 mt-2 rounded-xl text-white font-semibold text-sm bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed shadow-md shadow-indigo-200 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              {loading ? (
+                <>
+                  <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Processing...</span>
+                </>
+              ) : (
+                <>
+                  <span>{state === "login" ? "Sign In" : "Create Account"}</span>
+                  <ArrowRight className="size-4" />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Quick Perks footer */}
+          <div className="mt-8 pt-6 border-t border-slate-100 grid grid-cols-2 gap-3 text-[11px] text-slate-500">
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" />
+              <span>ATS Friendly Templates</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" />
+              <span>AI Content Enhancer</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
