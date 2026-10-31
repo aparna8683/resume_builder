@@ -218,7 +218,7 @@ const Preview = () => {
             </button>
 
             <Link
-              to="/app?state=register"
+              to="/login?state=register"
               className="max-md:hidden flex items-center gap-1.5 text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-2 rounded-xl transition"
             >
               <Sparkles className="size-3.5" />
