@@ -1,7 +1,10 @@
 import OpenAI from "openai";
 
-const apiKey = process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY;
-const baseURL = process.env.OPENAI_BASE_URL || undefined;
+const usingGemini = Boolean(process.env.GEMINI_API_KEY) && !process.env.OPENAI_API_KEY;
+const apiKey = process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY;
+const baseURL = process.env.OPENAI_BASE_URL || (
+  usingGemini ? "https://generativelanguage.googleapis.com/v1beta/openai/" : undefined
+);
 
 const ai = apiKey
   ? new OpenAI({ apiKey, ...(baseURL ? { baseURL } : {}) })
