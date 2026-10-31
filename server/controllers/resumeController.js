@@ -8,22 +8,61 @@ const fileToBase64DataUri = (filePath, mimetype) => {
   return `data:${mimetype || "image/png"};base64,${fileData.toString("base64")}`;
 };
 
-const allowedResumeFields = new Set([
-  "title", "public", "template", "accent_color", "professional_summary",
-  "skills", "personal_info", "experience", "project", "education",
-]);
+const fieldSets = {
+  personal_info: new Set(["image", "full_name", "profession", "email", "phone", "location", "linkedin", "website"]),
+  experience: new Set(["company", "position", "start_date", "end_date", "description", "is_current"]),
+  project: new Set(["name", "type", "description"]),
+  education: new Set(["institution", "degree", "field", "gpa", "graduation_date"]),
+};
+
+const sanitizeObject = (value, allowedFields, label) => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`${label} must be an object.`);
+  }
+  const result = {};
+  for (const [key, fieldValue] of Object.entries(value)) {
+    if (allowedFields.has(key) && !key.startsWith("$") && !key.includes(".")) {
+      result[key] = fieldValue;
+    }
+  }
+  return result;
+};
 
 const sanitizeResumeUpdate = (input) => {
   if (!input || typeof input !== "object" || Array.isArray(input)) {
     throw new Error("Resume data must be a JSON object.");
   }
-  const sanitized = {};
+
+  const allowedFields = new Set([
+    "title", "public", "template", "accent_color", "professional_summary",
+    "skills", "personal_info", "experience", "project", "education",
+  ]);
+  const update = {};
+
   for (const [key, value] of Object.entries(input)) {
-    if (!allowedResumeFields.has(key) || key.startsWith("$") || key.includes(".")) continue;
-    sanitized[key] = value;
+    if (!allowedFields.has(key) || key.startsWith("$") || key.includes(".")) continue;
+
+    if (key === "personal_info") {
+      update[key] = sanitizeObject(value, fieldSets.personal_info, "personal_info");
+    } else if (["experience", "project", "education"].includes(key)) {
+      if (!Array.isArray(value)) throw new Error(`${key} must be an array.`);
+      update[key] = value.map((item, index) =>
+        sanitizeObject(item, fieldSets[key], `${key}[${index}]`)
+      );
+    } else if (key === "skills") {
+      if (!Array.isArray(value) || value.some((skill) => typeof skill !== "string")) {
+        throw new Error("skills must be an array of strings.");
+      }
+      update[key] = value.map((skill) => skill.trim()).filter(Boolean);
+    } else {
+      update[key] = value;
+    }
   }
-  if (Object.keys(sanitized).length === 0) throw new Error("No supported resume fields were provided.");
-  return sanitized;
+
+  if (Object.keys(update).length === 0) {
+    throw new Error("No supported resume fields were provided.");
+  }
+  return update;
 };
 
 // Create Resume
@@ -142,7 +181,7 @@ export const updateResume = async (req, res) => {
       if (!imageUrl && fs.existsSync(image.path)) imageUrl = fileToBase64DataUri(image.path, image.mimetype);
       if (imageUrl) {
         update.personal_info = {
-          ...(update.personal_info && typeof update.personal_info === "object" ? update.personal_info : {}),
+          ...(update.personal_info || {}),
           image: imageUrl,
         };
       }
