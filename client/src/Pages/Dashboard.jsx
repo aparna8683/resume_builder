@@ -114,11 +114,6 @@ const Dashboard = () => {
         return;
       }
 
-      const formData = new FormData();
-      formData.append("title", title.trim());
-      formData.append("resumeText", resumeText);
-      formData.append("resume", pdfFile);
-
       // The browser already extracts PDF text. Send the text payload only;
       // the server does not need a second copy of the PDF file.
       const { data } = await api.post("/api/ai/upload-resume", {
