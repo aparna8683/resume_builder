@@ -42,10 +42,10 @@ const fallbackExtractResumeData = (text) => {
     "MongoDB", "SQL", "PostgreSQL", "HTML", "CSS", "Tailwind CSS", "Git", "GitHub",
     "Docker", "AWS", "Figma", "REST APIs", "GraphQL", "Redux", "Next.js"
   ];
-  result.skills = commonSkills.filter((skill) => {
-    const escaped = skill.replace(/[.*+?^\u0024{}()|[\]\\]/g, "\\$&");
-    return new RegExp(`\\b${escaped}\\b`, "i").test(text);
-  });
+  const normalizedText = text.toLowerCase();
+  result.skills = commonSkills.filter((skill) =>
+    normalizedText.includes(skill.toLowerCase())
+  );
 
   const lines = text.split("\n").map((line) => line.trim()).filter(Boolean);
   if (lines[0] && lines[0].length < 80 && !lines[0].includes("@")) result.personal_info.full_name = lines[0];
