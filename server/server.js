@@ -16,10 +16,12 @@ const allowedOrigins = (process.env.CLIENT_URL || "")
 
 app.use(cors({
   origin(origin, callback) {
-    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+    if (!origin || (process.env.NODE_ENV !== "production" && allowedOrigins.length === 0) || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    return callback(new Error("Origin is not allowed by CORS"));
+    const error = new Error("Origin is not allowed by CORS. Configure CLIENT_URL with your frontend origin.");
+    error.status = 403;
+    return callback(error);
   },
   credentials: true,
 }));
@@ -47,6 +49,9 @@ app.use((err, _req, res, _next) => {
 });
 
 export const startServer = async () => {
+  if (process.env.NODE_ENV === "production" && allowedOrigins.length === 0) {
+    throw new Error("CLIENT_URL must be configured in production.");
+  }
   await connectDB();
   return app.listen(PORT, () => console.log(`Resume Builder API listening on port ${PORT}`));
 };
