@@ -28,7 +28,7 @@ const sanitizeObject = (value, allowedFields, label) => {
   return result;
 };
 
-const sanitizeResumeUpdate = (input) => {
+export const sanitizeResumeUpdate = (input) => {
   if (!input || typeof input !== "object" || Array.isArray(input)) {
     throw new Error("Resume data must be a JSON object.");
   }
