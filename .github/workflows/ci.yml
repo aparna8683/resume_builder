@@ -31,6 +31,8 @@ jobs:
         run: |
           npm audit --json > npm-audit.json || true
           node -e "const a=require('node:fs').readFileSync('npm-audit.json','utf8'); const v=JSON.parse(a).vulnerabilities||{}; for (const [name,item] of Object.entries(v)) if (['high','critical'].includes(item.severity)) console.log(name + ': ' + item.severity + ', fixAvailable=' + JSON.stringify(item.fixAvailable));"
+      - name: Enforce dependency security threshold
+        run: npm audit --audit-level=high
       - name: Lint
         run: npm run lint
       - name: Production build
@@ -57,6 +59,8 @@ jobs:
         run: |
           npm audit --json > npm-audit.json || true
           node -e "const a=require('node:fs').readFileSync('npm-audit.json','utf8'); const v=JSON.parse(a).vulnerabilities||{}; for (const [name,item] of Object.entries(v)) if (['high','critical'].includes(item.severity)) console.log(name + ': ' + item.severity + ', fixAvailable=' + JSON.stringify(item.fixAvailable));"
+      - name: Enforce dependency security threshold
+        run: npm audit --audit-level=high
       - name: Run backend tests
         run: npm test
       - name: Check JavaScript syntax
