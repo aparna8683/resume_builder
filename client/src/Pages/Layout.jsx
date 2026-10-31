@@ -4,6 +4,7 @@ import Navbar from "../Components/Navbar";
 import { useSelector } from "react-redux";
 import { Loader2 } from "lucide-react";
 import Login from "./Login";
+import { Navigate } from "react-router-dom";
 
 const Layout = () => {
   const { user, loading } = useSelector((state) => state.auth);
@@ -30,7 +31,7 @@ const Layout = () => {
           </main>
         </div>
       ) : (
-        <Login />
+        <Navigate to="/login" replace />
       )}
     </div>
   );
