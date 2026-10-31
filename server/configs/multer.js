@@ -1,10 +1,14 @@
 import multer from "multer";
 import path from "path";
+import fs from "fs";
+
+const uploadDir = path.resolve(process.env.UPLOAD_DIR || "uploads");
+fs.mkdirSync(uploadDir, { recursive: true });
 
 const allowedMimeTypes = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
 
 const storage = multer.diskStorage({
-  destination: (_req, _file, callback) => callback(null, process.env.UPLOAD_DIR || "uploads"),
+  destination: (_req, _file, callback) => callback(null, uploadDir),
   filename: (_req, file, callback) => {
     const extension = path.extname(file.originalname).toLowerCase();
     callback(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${extension}`);
