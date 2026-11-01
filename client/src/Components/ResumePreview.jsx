@@ -22,8 +22,7 @@ const ResumePreview = ({ data, template, accentColor = "#4F46E5", classes = "" }
   };
 
   return (
-    <div className="w-full flex flex-col items-center">
-      {/* Zoom Controls Bar */}
+    <div className="w-full min-w-0 flex flex-col items-center">
       <div className="w-full flex items-center justify-between pb-3 px-2 text-xs text-slate-500 print:hidden">
         <span className="font-medium text-slate-600">
           Preview Scale: {Math.round(zoomLevel * 100)}%
@@ -31,7 +30,7 @@ const ResumePreview = ({ data, template, accentColor = "#4F46E5", classes = "" }
         <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1 shadow-2xs">
           <button
             type="button"
-            onClick={() => setZoomLevel((z) => Math.max(0.6, z - 0.1))}
+            onClick={() => setZoomLevel((z) => Math.max(0.6, Number((z - 0.1).toFixed(1))))}
             className="p-1 hover:bg-slate-100 rounded-lg text-slate-600 transition cursor-pointer"
             title="Zoom out"
           >
@@ -47,7 +46,7 @@ const ResumePreview = ({ data, template, accentColor = "#4F46E5", classes = "" }
           </button>
           <button
             type="button"
-            onClick={() => setZoomLevel((z) => Math.min(1.4, z + 0.1))}
+            onClick={() => setZoomLevel((z) => Math.min(1.4, Number((z + 0.1).toFixed(1))))}
             className="p-1 hover:bg-slate-100 rounded-lg text-slate-600 transition cursor-pointer"
             title="Zoom in"
           >
@@ -56,43 +55,56 @@ const ResumePreview = ({ data, template, accentColor = "#4F46E5", classes = "" }
         </div>
       </div>
 
-      {/* A4 Sheet Container */}
-      <div className="w-full overflow-x-auto p-4 sm:p-6 bg-slate-200/70 rounded-2xl flex justify-center border border-slate-200">
-        <div
-          style={{
-            transform: `scale(${zoomLevel})`,
-            transformOrigin: "top center",
-            transition: "transform 0.15s ease-out",
-          }}
-          className="shrink-0"
-        >
+      {/* Keep the A4 sheet anchored to the left when it is wider than its panel.
+          Centering an overflowing flex child can place its left edge outside the scroller. */}
+      <div className="w-full min-w-0 overflow-x-auto p-4 sm:p-6 bg-slate-200/70 rounded-2xl border border-slate-200">
+        <div className="flex justify-start w-max min-w-full">
           <div
-            id="resume-preview"
-            className={`w-[210mm] min-h-[297mm] bg-white text-slate-900 shadow-2xl shadow-slate-400/30 rounded-xs print:shadow-none print:w-full print:m-0 overflow-hidden ${classes}`}
+            style={{
+              transform: `scale(${zoomLevel})`,
+              transformOrigin: "top left",
+              transition: "transform 0.15s ease-out",
+            }}
+            className="shrink-0"
           >
-            {renderTemplate()}
+            <div
+              id="resume-preview"
+              className={`w-[210mm] min-h-[297mm] box-border bg-white text-slate-900 shadow-2xl shadow-slate-400/30 rounded-xs print:shadow-none print:w-[210mm] print:m-0 overflow-hidden ${classes}`}
+            >
+              {renderTemplate()}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Print & PDF styling */}
       <style>
         {`
           .resume-pdf-export-container {
             position: fixed;
-            left: -10000px;
+            left: 0;
             top: 0;
             width: 210mm;
+            min-width: 210mm;
             background: #ffffff;
+            pointer-events: none;
+            opacity: 0;
             z-index: -1;
           }
           .resume-pdf-export {
+            display: block !important;
+            box-sizing: border-box !important;
             width: 210mm !important;
             min-width: 210mm !important;
             max-width: 210mm !important;
+            min-height: 297mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            transform: none !important;
             border: none !important;
+            border-radius: 0 !important;
             box-shadow: none !important;
             background: #ffffff !important;
+            overflow: visible !important;
           }
           .resume-pdf-export section,
           .resume-pdf-export header {
@@ -118,7 +130,7 @@ const ResumePreview = ({ data, template, accentColor = "#4F46E5", classes = "" }
               position: absolute;
               left: 0;
               top: 0;
-              width: 100%;
+              width: 210mm;
               margin: 0;
               padding: 0;
               box-shadow: none !important;
