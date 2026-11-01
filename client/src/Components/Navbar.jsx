@@ -2,7 +2,8 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../app/features/authslice";
-import { LogOut, FileText, Sparkles, Plus } from "lucide-react";
+import api from "../configs/api";
+import { LogOut, FileText, Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 
 const Navbar = () => {
@@ -10,10 +11,16 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    dispatch(logout());
-    toast.success("Logged out successfully");
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await api.post("/api/users/logout");
+    } catch (error) {
+      console.warn("Could not clear the server session:", error?.message);
+    } finally {
+      dispatch(logout());
+      toast.success("Logged out successfully");
+      navigate("/");
+    }
   };
 
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : "U";
@@ -22,18 +29,8 @@ const Navbar = () => {
     <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all">
       <nav className="flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 py-3">
         {/* Brand */}
-        <Link to="/" className="flex items-center gap-2 group">
-          <div className="size-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-md shadow-indigo-200 group-hover:scale-105 transition-transform">
-            <FileText className="size-5" />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-lg leading-tight bg-gradient-to-r from-slate-900 to-indigo-900 bg-clip-text text-transparent">
-              Resumify<span className="text-indigo-600">.ai</span>
-            </span>
-            <span className="text-[10px] text-slate-400 font-medium tracking-wide uppercase">
-              AI Resume Suite
-            </span>
-          </div>
+        <Link to="/" className="shrink-0 rounded-xl transition-transform hover:scale-[1.02]" aria-label="Resumify.ai home">
+          <img src="/logo.svg" alt="Resumify.ai — AI Resume Suite" className="h-10 sm:h-11 w-auto" />
         </Link>
 
         {/* Center / Navigation items */}

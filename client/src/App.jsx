@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import api from "./configs/api";
 import HOME from "./Pages/Home";
 import Layout from "./Pages/Layout";
@@ -13,24 +13,25 @@ import { Toaster } from "react-hot-toast";
 
 const App = () => {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+  const { user, loading } = useSelector((state) => state.auth);
+  const location = useLocation();
+  const authPageState = new URLSearchParams(location.search).get("state");
 
   const getUserData = useCallback(async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      dispatch(setLoading(false));
-      return;
-    }
-
     try {
       const { data } = await api.get("/api/users/data");
       if (data?.user) {
-        dispatch(login({ token, user: data.user }));
+        // Migrate any old localStorage session to the HttpOnly cookie session.
+        localStorage.removeItem("token");
+        dispatch(login({ user: data.user }));
       } else {
         dispatch(logout());
       }
     } catch (error) {
-      console.warn("Session check notice:", error?.response?.data?.message || error.message);
+      // A 401 during startup simply means there is no saved session to restore.
+      if (error?.response?.status !== 401) {
+        console.warn("Session check failed:", error?.response?.data?.message || error.message);
+      }
       dispatch(logout());
     } finally {
       dispatch(setLoading(false));
@@ -40,6 +41,22 @@ const App = () => {
   useEffect(() => {
     getUserData();
   }, [getUserData]);
+
+  useEffect(() => {
+    const handleUnauthorized = () => dispatch(logout());
+    window.addEventListener("auth:unauthorized", handleUnauthorized);
+    return () => window.removeEventListener("auth:unauthorized", handleUnauthorized);
+  }, [dispatch]);
+
+  // Finish restoring the cookie session before displaying routes. This prevents
+  // a late startup 401 from racing with a user submitting the login form.
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50" role="status" aria-label="Checking your session">
+        <div className="size-8 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -61,7 +78,7 @@ const App = () => {
         <Route path="/" element={<HOME />} />
         <Route
           path="/login"
-          element={user ? <Navigate to="/app" replace /> : <Login />}
+          element={user && !["forgot", "reset"].includes(authPageState) ? <Navigate to="/app" replace /> : <Login />}
         />
         <Route path="/app" element={<Layout />}>
           <Route index element={<Dashboard />} />

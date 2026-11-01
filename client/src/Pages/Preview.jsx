@@ -13,6 +13,7 @@ import {
   FileText,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { preparePdfExport } from "../utils/pdfExport";
 
 const Preview = () => {
   const { resumeId } = useParams();
@@ -57,12 +58,13 @@ const Preview = () => {
 
       const { default: html2pdf } = await import("html2pdf.js");
       const exportElement = resumeElement.cloneNode(true);
-      exportElement.classList.add("resume-pdf-export");
 
       container = document.createElement("div");
       container.className = "resume-pdf-export-container";
       container.appendChild(exportElement);
       document.body.appendChild(container);
+
+      preparePdfExport(exportElement);
 
       const name = resumeData.personal_info?.full_name?.trim() || "Resume";
       const cleanFileName = `${name.replace(/\s+/g, "_")}_Resume.pdf`.replace(

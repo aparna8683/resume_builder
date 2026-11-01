@@ -1,6 +1,15 @@
 import express from 'express';
-import { getUserById, getUserResume, loginUser, registeredUser } from '../controllers/userController.js';
+import {
+  getUserById,
+  getUserResume,
+  loginUser,
+  logoutUser,
+  registeredUser,
+  requestPasswordReset,
+  resetPassword,
+} from '../controllers/userController.js';
 import protect from '../middlewares/authMiddleware.js';
+import resetRateLimit from '../middlewares/resetRateLimit.js';
 
 const userRouter = express.Router();
 
@@ -13,6 +22,9 @@ userRouter.get('/register', (req, res) => {
 });
 userRouter.post('/register', registeredUser);
 userRouter.post('/login', loginUser);
+userRouter.post('/logout', logoutUser);
+userRouter.post('/forgot-password', resetRateLimit, requestPasswordReset);
+userRouter.post('/reset-password', resetPassword);
 userRouter.get('/data', protect, getUserById);
 userRouter.get('/resumes', protect, getUserResume);
 

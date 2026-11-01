@@ -49,37 +49,40 @@ const ClassicTemplate = ({ data = {}, accentColor = "#4F46E5" }) => {
           </p>
         )}
 
-        <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-1.5 text-xs text-slate-600">
+        <div className="resume-contact-list flex flex-wrap justify-center items-center gap-x-4 gap-y-1.5 text-xs text-slate-600">
           {personal_info?.email && (
-            <div className="flex items-center gap-1">
-              <Mail className="size-3.5" style={{ color: accentColor }} />
-              <span>{personal_info.email}</span>
+            <div className="resume-contact-item flex items-center gap-1">
+              <Mail
+                className="size-3.5 resume-contact-icon-email"
+                style={{ color: accentColor }}
+              />
+              <span className="resume-contact-text">{personal_info.email}</span>
             </div>
           )}
           {personal_info?.phone && (
-            <div className="flex items-center gap-1">
+            <div className="resume-contact-item flex items-center gap-1">
               <Phone className="size-3.5" style={{ color: accentColor }} />
-              <span>{personal_info.phone}</span>
+              <span className="resume-contact-text">{personal_info.phone}</span>
             </div>
           )}
           {personal_info?.location && (
-            <div className="flex items-center gap-1">
+            <div className="resume-contact-item flex items-center gap-1">
               <MapPin className="size-3.5" style={{ color: accentColor }} />
-              <span>{personal_info.location}</span>
+              <span className="resume-contact-text">{personal_info.location}</span>
             </div>
           )}
           {personal_info?.linkedin && (
-            <div className="flex items-center gap-1">
+            <div className="resume-contact-item flex items-center gap-1">
               <Linkedin className="size-3.5" style={{ color: accentColor }} />
-              <span className="break-all">
+              <span className="resume-contact-text break-all">
                 {personal_info.linkedin.replace(/^https?:\/\/(www\.)?/, "")}
               </span>
             </div>
           )}
           {personal_info?.website && (
-            <div className="flex items-center gap-1">
+            <div className="resume-contact-item flex items-center gap-1">
               <Globe className="size-3.5" style={{ color: accentColor }} />
-              <span className="break-all">
+              <span className="resume-contact-text break-all">
                 {personal_info.website.replace(/^https?:\/\/(www\.)?/, "")}
               </span>
             </div>
