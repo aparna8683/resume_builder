@@ -1,169 +1,44 @@
-import React from "react";
+﻿import React from "react";
+import { Link } from "react-router-dom";
+import { ArrowUpRight, Sparkles } from "lucide-react";
 
-const Footer = () => {
-  return (
-    <div>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        * {
-          font-family: 'Poppins', sans-serif;
-        }
-      `}</style>
+const Footer = () => (
+  <footer className="border-t border-indigo-100/80 bg-gradient-to-br from-white via-indigo-50/60 to-violet-50/60">
+    <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 sm:px-8 md:grid-cols-[1.4fr_1fr_1fr] lg:px-12 lg:py-16">
+      <div className="space-y-4">
+        <Link to="/" aria-label="Resumify.ai home" className="inline-flex rounded-xl transition-transform hover:scale-[1.02]">
+          <img src="/logo.svg" alt="Resumify.ai - AI Resume Suite" className="h-11 w-auto" />
+        </Link>
+        <p className="max-w-sm text-sm leading-6 text-slate-600">
+          Build a confident, ATS-friendly resume with smart tools that keep your experience at the center.
+        </p>
+        <Link to="/login?state=register" className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-200 transition hover:-translate-y-0.5 hover:bg-indigo-700">
+          <Sparkles className="size-4" /> Create your resume <ArrowUpRight className="size-4" />
+        </Link>
+      </div>
 
-      <footer className="flex flex-wrap justify-center lg:justify-between overflow-hidden gap-10 md:gap-20 py-16 px-6 md:px-16 lg:px-24 xl:px-32 text-[13px] text-gray-500 bg-gradient-to-r from-white via-indigo-50 to-white">
-        <div className="flex flex-wrap items-start gap-10 md:gap-[60px] xl:gap-[140px]">
-          <a href="https://prebuiltui.com">
-            <img src="/logo.svg" alt="logo" className="h-11 w-auto" />
-          </a>
+      <div>
+        <h2 className="text-sm font-bold text-slate-900">Explore</h2>
+        <ul className="mt-4 space-y-3 text-sm text-slate-600">
+          <li><a href="/#features" className="transition hover:text-indigo-600">Features</a></li>
+          <li><a href="/#testimonials" className="transition hover:text-indigo-600">Testimonials</a></li>
+          <li><a href="/#cta" className="transition hover:text-indigo-600">Get started</a></li>
+        </ul>
+      </div>
 
-          {/* Product Section */}
-          <div>
-            <p className="text-slate-800 font-semibold">Product</p>
-            <ul className="mt-2 space-y-2">
-              {["Home", "Support", "Pricing", "Affiliate"].map(
-                (item, index) => (
-                  <li key={index}>
-                    <a href="/" className="hover:text-indigo-600 transition">
-                      {item}
-                    </a>
-                  </li>
-                )
-              )}
-            </ul>
-          </div>
-
-          {/* Resources Section */}
-          <div>
-            <p className="text-slate-800 font-semibold">Resources</p>
-            <ul className="mt-2 space-y-2">
-              <li>
-                <a href="/" className="hover:text-indigo-600 transition">
-                  Company
-                </a>
-              </li>
-              <li>
-                <a href="/" className="hover:text-indigo-600 transition">
-                  Blogs
-                </a>
-              </li>
-              <li>
-                <a href="/" className="hover:text-indigo-600 transition">
-                  Community
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/"
-                  className="hover:text-indigo-600 transition flex items-center"
-                >
-                  Careers
-                  <span className="text-xs text-white bg-indigo-600 rounded-md ml-2 px-2 py-0.5">
-                    We’re hiring!
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a href="/" className="hover:text-indigo-600 transition">
-                  About
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Legal Section */}
-          <div>
-            <p className="text-slate-800 font-semibold">Legal</p>
-            <ul className="mt-2 space-y-2">
-              <li>
-                <a href="/" className="hover:text-indigo-600 transition">
-                  Privacy
-                </a>
-              </li>
-              <li>
-                <a href="/" className="hover:text-indigo-600 transition">
-                  Terms
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Right Section */}
-        <div className="flex flex-col max-md:items-center max-md:text-center gap-2 items-end">
-          <p className="max-w-60">
-            Making every customer feel valued—no matter the size of your
-            audience.
-          </p>
-
-          {/* Social Icons */}
-          <div className="flex items-center gap-4 mt-3">
-            {[
-              {
-                href: "https://dribbble.com/prebuiltui",
-                icon: (
-                  <>
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M19.13 5.09C15.22 9.14 10 10.44 2.25 10.94"></path>
-                    <path d="M21.75 12.84c-6.62-1.41-12.14 1-16.38 6.32"></path>
-                    <path d="M8.56 2.75c4.37 6 6 9.42 8 17.72"></path>
-                  </>
-                ),
-              },
-              {
-                href: "https://www.linkedin.com/company/prebuiltui",
-                icon: (
-                  <>
-                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
-                    <rect width="4" height="12" x="2" y="9"></rect>
-                    <circle cx="4" cy="4" r="2"></circle>
-                  </>
-                ),
-              },
-              {
-                href: "https://x.com/prebuiltui",
-                icon: (
-                  <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
-                ),
-              },
-              {
-                href: "https://www.youtube.com/@prebuiltui",
-                icon: (
-                  <>
-                    <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"></path>
-                    <path d="m10 15 5-3-5-3z"></path>
-                  </>
-                ),
-              },
-            ].map((social, i) => (
-              <a key={i} href={social.href} target="_blank" rel="noreferrer">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="size-5 hover:text-indigo-500 transition"
-                >
-                  {social.icon}
-                </svg>
-              </a>
-            ))}
-          </div>
-
-          <p className="mt-3 text-center text-slate-700">
-            © 2025{" "}
-            <a href="https://prebuiltui.com" className="hover:text-indigo-600">
-              PrebuiltUI
-            </a>
-          </p>
-        </div>
-      </footer>
+      <div>
+        <h2 className="text-sm font-bold text-slate-900">Your workspace</h2>
+        <ul className="mt-4 space-y-3 text-sm text-slate-600">
+          <li><Link to="/login?state=login" className="transition hover:text-indigo-600">Sign in</Link></li>
+          <li><Link to="/login?state=register" className="transition hover:text-indigo-600">Create an account</Link></li>
+          <li><Link to="/app" className="transition hover:text-indigo-600">Dashboard</Link></li>
+        </ul>
+      </div>
     </div>
-  );
-};
+    <div className="border-t border-indigo-100/80 px-6 py-5 text-center text-xs text-slate-500">
+      Copyright {new Date().getFullYear()} Resumify.ai. All rights reserved.
+    </div>
+  </footer>
+);
 
 export default Footer;

@@ -20,7 +20,6 @@ import { useNavigate } from "react-router-dom";
 import api from "../configs/api";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
-import pdfToText from "react-pdftotext";
 import { dummyResumeData } from "../assets/assets";
 
 const Dashboard = () => {
@@ -106,6 +105,7 @@ const Dashboard = () => {
 
     try {
       setIsSubmitting(true);
+      const { default: pdfToText } = await import("react-pdftotext");
       const resumeText = await pdfToText(pdfFile);
 
       if (!resumeText?.trim()) {

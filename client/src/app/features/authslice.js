@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const authSlice= createSlice({
+const authSlice = createSlice({
     name:'auth',
     initialState:{
         token:null,
@@ -8,18 +8,17 @@ const authSlice= createSlice({
         loading:true
     },
     reducers:{
-        login:(state, action)=> {
-            state.token = action.payload.token
-            state.user= action.payload.user
-
+        login: (state, action) => {
+            state.token = null; // Session credentials stay in the HttpOnly cookie.
+            state.user = action.payload.user;
         },
-        logout:(state)=>{
-            state.token='';
-            state.user=null;
-            localStorage.removeItem('token')
+        logout: (state) => {
+            state.token = null;
+            state.user = null;
+            localStorage.removeItem("token");
         },
-        setLoading:(state, action)=>{
-             state.loading=action.payload
+        setLoading: (state, action) => {
+             state.loading = action.payload;
         }
     }
 })

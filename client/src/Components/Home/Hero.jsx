@@ -19,8 +19,8 @@ const Hero = () => {
       <div className="min-h-screen pb-20">
         {/* Navbar */}
         <nav className="z-50 flex items-center justify-between w-full py-4 px-6 md:px-16 lg:px-24 xl:px-40 text-sm">
-          <Link to="/">
-            <img src="/logo.svg" alt="Resume Builder Logo" className="h-11 w-auto" />
+          <Link to="/" aria-label="Resumify.ai home" className="rounded-xl transition-transform hover:scale-[1.02]">
+            <img src="/logo.svg" alt="Resumify.ai - AI Resume Suite" className="h-11 w-auto" />
           </Link>
 
           <div className="hidden md:flex items-center gap-8 transition duration-500 text-slate-800">
@@ -42,14 +42,14 @@ const Hero = () => {
             {!user ? (
               <>
                 <Link
-                  to="/app?state=register"
+                  to="/login?state=register"
                   className="hidden md:block px-6 py-2 bg-indigo-500 hover:bg-indigo-700 active:scale-95 transition-all rounded-full text-white"
                 >
                   Get started
                 </Link>
 
                 <Link
-                  to="/app?state=login"
+                  to="/login?state=login"
                   className="hidden md:block px-6 py-2 border active:scale-95 hover:bg-slate-50 transition-all rounded-full text-slate-700 hover:text-slate-900"
                 >
                   Login
@@ -105,13 +105,13 @@ const Hero = () => {
           {!user ? (
             <>
               <Link
-                to="/app?state=register"
+                to="/login?state=register"
                 className="px-7 py-2 bg-indigo-600 text-white rounded-full"
               >
                 Get started
               </Link>
               <Link
-                to="/app?state=login"
+                to="/login?state=login"
                 className="px-7 py-2 border border-white text-white rounded-full"
               >
                 Login
@@ -252,15 +252,6 @@ const Hero = () => {
         </div>
       </div>
 
-      <style>
-        {`
-          @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
-
-          * {
-            font-family: 'Poppins', sans-serif;
-          }
-        `}
-      </style>
     </>
   );
 };
