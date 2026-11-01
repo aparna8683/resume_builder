@@ -187,7 +187,27 @@ const ResumeBuilder = () => {
         margin: 0,
         filename: cleanFileName,
         image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2.5, useCORS: true, allowTaint: false, backgroundColor: "#ffffff", logging: false },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          allowTaint: false,
+          backgroundColor: "#ffffff",
+          logging: false,
+          scrollX: 0,
+          scrollY: 0,
+          onclone: (clonedDocument) => {
+            // The live export node is transparent and out of the way.
+            // Make only the html2canvas clone visible at the viewport origin.
+            const clonedContainer = clonedDocument.querySelector(".resume-pdf-export-container");
+            if (clonedContainer) {
+              clonedContainer.style.left = "0";
+              clonedContainer.style.top = "0";
+              clonedContainer.style.opacity = "1";
+              clonedContainer.style.visibility = "visible";
+              clonedContainer.style.zIndex = "99999";
+            }
+          },
+        },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait", compress: true },
         pagebreak: { mode: ["css", "legacy"], avoid: ["section", "header", ".avoid-page-break"] },
       };
